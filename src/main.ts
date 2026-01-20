@@ -6,14 +6,19 @@ import { Preloader } from './scenes/Preloader';
 
 import { Game, Types } from "phaser";
 
-//  Find out more information about the Game Config at:
-//  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
+let requestedHeight = 1024;
+let gameRatio = window.innerWidth < window.innerHeight ? window.innerWidth / window.innerHeight : window.innerHeight / window.innerWidth;
+
+let height = requestedHeight > window.innerHeight ? window.innerHeight : requestedHeight;
+let width = Math.ceil(height * gameRatio);
+console.log(width, window.innerWidth, window.innerHeight, height, gameRatio);
+
 const config: Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: 1024,
     height: 768,
     parent: 'game-container',
-    backgroundColor: '#028af8',
+    backgroundColor: '#000000',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -24,7 +29,8 @@ const config: Types.Core.GameConfig = {
         MainMenu,
         MainGame,
         GameOver
-    ]
+    ],
+    pixelArt: true
 };
 
 export default new Game(config);

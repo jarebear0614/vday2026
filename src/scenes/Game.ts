@@ -1,35 +1,39 @@
-import { Scene } from 'phaser';
+import { Align } from '../util/align';
+import { DEFAULT_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE } from '../util/const';
+import { BaseScene } from './BaseScene';
 
-export class Game extends Scene
+export class Game extends BaseScene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
-    background: Phaser.GameObjects.Image;
-    msg_text : Phaser.GameObjects.Text;
 
     constructor ()
     {
         super('Game');
     }
 
+    preload()
+    {
+        this.load.spritesheet('megan', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32})
+    }
+
     create ()
     {
+        super.create();
+
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor(0x00ff00);
+        this.camera.setBackgroundColor(0x000000);
 
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        let megan = this.add.sprite(10, 10, 'megan', 0).setOrigin(0, 0);
 
-        this.msg_text = this.add.text(512, 384, 'Make something fun!\nand share it with us:\nsupport@phaser.io', {
-            fontFamily: 'Arial Black', fontSize: 38, color: '#ffffff',
-            stroke: '#000000', strokeThickness: 8,
-            align: 'center'
+        Align.scaleToGameWidth(megan, DEFAULT_SPRITE_SCALE, this);
+
+        this.anims.create({
+            key: 'megan_idle_down',
+            frames: this.anims.generateFrameNumbers('megan', {start: 0, end: 3}),
+            frameRate: DEFAULT_SPRITE_FRAMERATE,
+            repeat: -1
         });
-        this.msg_text.setOrigin(0.5);
-
-        this.input.once('pointerdown', () => {
-
-            this.scene.start('GameOver');
-
-        });
+        
+       megan.play('megan_idle_down');
     }
 }
