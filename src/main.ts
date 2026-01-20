@@ -11,14 +11,13 @@ let gameRatio = window.innerWidth < window.innerHeight ? window.innerWidth / win
 
 let height = requestedHeight > window.innerHeight ? window.innerHeight : requestedHeight;
 let width = Math.ceil(height * gameRatio);
-console.log(width, window.innerWidth, window.innerHeight, height, gameRatio);
 
 const config: Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: width,
     height: height,
     parent: 'game-container',
-    backgroundColor: '#000000',
+    backgroundColor: '#6f23c5',
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
@@ -30,7 +29,14 @@ const config: Types.Core.GameConfig = {
         MainGame,
         GameOver
     ],
-    pixelArt: true
+    pixelArt: true,
+    physics: {
+        default: 'arcade',
+        arcade: {
+            debug: true,
+            gravity: {x: 0, y: 0}
+        }
+    }
 };
 
 export default new Game(config);

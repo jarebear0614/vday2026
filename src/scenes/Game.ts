@@ -1,10 +1,43 @@
+import { GameObjects, Types } from 'phaser';
 import { Align } from '../util/align';
-import { DEFAULT_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE } from '../util/const';
+import { DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE } from '../util/const';
 import { BaseScene } from './BaseScene';
 
 export class Game extends BaseScene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
+
+    megan: Types.Physics.Arcade.SpriteWithDynamicBody;
+    lastMeganDirection: string = 'down';
+    meganDirection: string = 'down';
+    playerVelocity: number = 256;
+
+    cursors: Phaser.Types.Input.Keyboard.CursorKeys | undefined;
+
+    isTouchUpDown: boolean = false;
+    isTouchLeftDown: boolean = false;
+    isTouchRightDown: boolean = false;
+    isTouchDownDown: boolean = false;
+
+    isUpDown: boolean = false;
+    isLeftDown: boolean = false;
+    isRightDown: boolean = false;
+    isDownDown: boolean = false;
+
+    isPreviousUpDown: boolean = false;
+    isPreviousLeftDown: boolean = false;
+    isPreviousRightDown: boolean = false;
+    isPreviousDownDown: boolean = false;
+
+    interactKey: Phaser.Input.Keyboard.Key | undefined;
+
+    isInteractKeyDown: boolean = false;
+    isPreviousInteractKeyDown: boolean = false;
+
+    playerTouching: boolean = false;
+    wasPlayerTouching: boolean = false;
+
+    isUpdating: boolean = true;
 
     constructor ()
     {
@@ -13,7 +46,8 @@ export class Game extends BaseScene
 
     preload()
     {
-        this.load.spritesheet('megan', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('megan_idle', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('megan_walk', 'assets/megan/Megan-Walk.png', {frameWidth: 32, frameHeight: 32})
     }
 
     create ()
@@ -23,17 +57,166 @@ export class Game extends BaseScene
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
 
-        let megan = this.add.sprite(10, 10, 'megan', 0).setOrigin(0, 0);
 
-        Align.scaleToGameWidth(megan, DEFAULT_SPRITE_SCALE, this);
+
+
+        this.configurePlayer();
+        this.configureInput();
+    }
+
+    configurePlayer()
+    {
+        this.megan = this.physics.add.sprite(10, 10, 'megan', 0).setOrigin(0, 0).setGravity(0, 0);
+        Align.scaleToGameWidth( this.megan, DEFAULT_SPRITE_SCALE, this);
 
         this.anims.create({
             key: 'megan_idle_down',
-            frames: this.anims.generateFrameNumbers('megan', {start: 0, end: 3}),
-            frameRate: DEFAULT_SPRITE_FRAMERATE,
+            frames: this.anims.generateFrameNumbers('megan_idle', {start: 0, end: 3}),
+            frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_idle_up',
+            frames: this.anims.generateFrameNumbers('megan_idle', {start: 4, end: 7}),
+            frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_idle_right',
+            frames: this.anims.generateFrameNumbers('megan_idle', {start: 8, end: 11}),
+            frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_idle_left',
+            frames: this.anims.generateFrameNumbers('megan_idle', {start: 12, end: 15}),
+            frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_walk_down',
+            frames: this.anims.generateFrameNumbers('megan_walk', {start: 0, end: 5}),
+            frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_walk_up',
+            frames: this.anims.generateFrameNumbers('megan_walk', {start: 6, end: 11}),
+            frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_walk_right',
+            frames: this.anims.generateFrameNumbers('megan_walk', {start: 12, end: 17}),
+            frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'megan_walk_left',
+            frames: this.anims.generateFrameNumbers('megan_walk', {start: 18, end: 23}),
+            frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
             repeat: -1
         });
         
-       megan.play('megan_idle_down');
+        this.megan.play('megan_idle_' + this.meganDirection);
+    }
+
+    configureInput()
+    {
+        this.isTouchUpDown = false;
+        this.isTouchLeftDown = false;
+        this.isTouchRightDown = false;
+        this.isTouchDownDown = false;
+    
+        this.isUpDown = false;
+        this.isLeftDown = false;
+        this.isRightDown = false;
+        this.isDownDown = false;
+    
+        this.isPreviousUpDown = false;
+        this.isPreviousLeftDown = false;
+        this.isPreviousRightDown = false;
+        this.isPreviousDownDown = false;
+
+        this.isInteractKeyDown = false;
+        this.isPreviousInteractKeyDown = false;
+
+        this.cursors = this.input.keyboard?.createCursorKeys();
+        this.interactKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+    }
+
+    update(_: number, __: number)
+    {
+        if(!this.isUpdating)
+        {
+            return;
+        }
+
+        this.isPreviousUpDown = this.isUpDown;
+        this.isPreviousLeftDown = this.isLeftDown;
+        this.isPreviousRightDown = this.isRightDown;
+        this.isPreviousDownDown = this.isDownDown;
+
+        this.isUpDown = this.isTouchUpDown || this.cursors!.up.isDown;
+        this.isLeftDown = this.isTouchLeftDown || this.cursors!.left.isDown;
+        this.isRightDown = this.isTouchRightDown || this.cursors!.right.isDown;
+        this.isDownDown = this.isTouchDownDown || this.cursors!.down.isDown;
+
+        let vel: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
+
+        this.lastMeganDirection = this.meganDirection;
+
+        if (this.isUpDown) 
+        {
+            this.meganDirection = "up";
+            vel.y = -this.playerVelocity;
+        }
+        if (this.isDownDown) 
+        {
+            this.meganDirection = "down";
+            vel.y = this.playerVelocity;
+        }
+
+        if (this.isRightDown) 
+        {
+            this.meganDirection = "right";
+            vel.x = this.playerVelocity;
+        }
+        if (this.isLeftDown) 
+        {
+            this.meganDirection = "left";
+            vel.x = -this.playerVelocity;
+        }
+
+        vel = vel.normalize().scale(this.playerVelocity);        
+
+        if(vel.lengthSq() > 0) {
+            this.megan.setVelocity(vel.x, vel.y);
+
+            if(this.lastMeganDirection != this.meganDirection)
+            {
+                console.log('here');
+                this.megan.play('megan_walk_' + this.meganDirection);
+            }
+        } 
+        
+        if(!this.isUpDown && !this.isDownDown && !this.isRightDown && !this.isLeftDown)
+        {
+            this.megan.play('megan_idle_' + this.meganDirection);
+        }
+
+        if( (!this.isUpDown && this.isPreviousUpDown) ||
+            (!this.isLeftDown && this.isPreviousLeftDown) ||
+            (!this.isRightDown && this.isPreviousRightDown) ||
+            (!this.isDownDown && this.isPreviousDownDown)) {
+                this.megan.setVelocity(0, 0);
+        }
     }
 }

@@ -7,7 +7,6 @@ export class Align {
         let width = scene.getGameWidth();
         object.displayWidth = width * percentage;
         object.scaleY = object.scaleX;
-        console.log(object.displayWidth, percentage, width);
     }
 
     public static scaleToGameHeight(object: Phaser.GameObjects.Components.Size & Phaser.GameObjects.Components.Transform, percentage: number, scene: BaseScene) 
