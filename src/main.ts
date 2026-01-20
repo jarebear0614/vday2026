@@ -15,8 +15,8 @@ console.log(width, window.innerWidth, window.innerHeight, height, gameRatio);
 
 const config: Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: 1024,
-    height: 768,
+    width: width,
+    height: height,
     parent: 'game-container',
     backgroundColor: '#000000',
     scale: {
