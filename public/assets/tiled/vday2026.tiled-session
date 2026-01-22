@@ -4,6 +4,13 @@
         "width": 2
     },
     "activeFile": "maps/main.tmx",
+    "console.history": [
+        "Tiled",
+        "Tiled.Tilemap",
+        "iled.activeAsset",
+        "Tiled.activeAsset",
+        "let currentAsset = tiled.activeAsset;\n\nif (currentAsset && currentAsset.isTileset) {\n    let currentTileset = currentAsset;\n    // Now you can work with the currentTileset object\n    tiled.log(\"Current tileset name: \" + currentTileset.name);\n    tiled.log(\"Tile count: \" + currentTileset.tileCount);\n    // You can iterate over tiles or access other properties\n} else {\n    tiled.warn(\"No tileset is currently active or selected.\");\n}"
+    ],
     "expandedProjectPaths": [
         ".",
         "maps"

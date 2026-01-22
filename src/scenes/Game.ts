@@ -140,6 +140,9 @@ export class Game extends BaseScene
         });
         
         this.megan.play('megan_idle_' + this.meganDirection);
+
+        this.camera.startFollow(this.megan, true, 1.0, 1.0, 0.0, 0.0);
+        this.camera.setBounds(0, 0, this.xLimit, this.yLimit);
     }
 
     configureInput()
