@@ -1,14 +1,15 @@
-import { GameObjects, Types } from 'phaser';
+import { GameObjects, Tilemaps, Types } from 'phaser';
 import { Align } from '../util/align';
-import { DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE } from '../util/const';
+import { DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
+import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
 
 export class Game extends BaseScene
 {
     camera: Phaser.Cameras.Scene2D.Camera;
 
     megan: Types.Physics.Arcade.SpriteWithDynamicBody;
-    lastMeganDirection: string = 'down';
+    
     meganDirection: string = 'down';
     playerVelocity: number = 256;
 
@@ -39,6 +40,15 @@ export class Game extends BaseScene
 
     isUpdating: boolean = true;
 
+    map: Tilemaps.Tilemap;
+    mainTileset: Tilemaps.Tileset;
+
+    xLimit: number = 0;
+    yLimit: number = 0;
+    tilemapScale: number = 0;
+
+    public animatedTiles!: AnimatedTilesPlugin; 
+
     constructor ()
     {
         super('Game');
@@ -46,8 +56,11 @@ export class Game extends BaseScene
 
     preload()
     {
-        this.load.spritesheet('megan_idle', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32})
-        this.load.spritesheet('megan_walk', 'assets/megan/Megan-Walk.png', {frameWidth: 32, frameHeight: 32})
+        this.load.spritesheet('megan_idle', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('megan_walk', 'assets/megan/Megan-Walk.png', {frameWidth: 32, frameHeight: 32});
+
+        this.load.image('grass_water_tileset', 'assets/tilesets/Tileset Grass Water Spring Extruded.png');
+        this.load.tilemapTiledJSON('main', 'assets/maps/main.tmj')
     }
 
     create ()
@@ -57,11 +70,12 @@ export class Game extends BaseScene
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
 
-
-
-
+        this.configureTilemaps();
         this.configurePlayer();
         this.configureInput();
+
+        this.animatedTiles.init(this.map);
+        this.animatedTiles.setRate(0.5);
     }
 
     configurePlayer()
@@ -152,6 +166,20 @@ export class Game extends BaseScene
         this.interactKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
     }
 
+    private configureTilemaps() {        
+        this.map = this.make.tilemap({key: 'main'});
+        this.mainTileset = this.map.addTilesetImage('Grass Water Spring Extruded', 'grass_water_tileset', 16, 16, 1, 2)!;
+        let backgroundLayer = this.map.createLayer('ground', [this.mainTileset], 0, 0);   
+        let backgroundLayerDecoration = this.map.createLayer('ground_decoration', [this.mainTileset], 0, 0);
+
+        this.tilemapScale = (this.getGameWidth() * TILE_SCALE) / TILE_SIZE;
+        backgroundLayer?.setScale(this.tilemapScale, this.tilemapScale);
+        backgroundLayerDecoration?.setScale(this.tilemapScale, this.tilemapScale);
+
+        this.xLimit = this.map.widthInPixels * this.tilemapScale;
+        this.yLimit = this.map.heightInPixels * this.tilemapScale;
+    }
+
     update(_: number, __: number)
     {
         if(!this.isUpdating)
@@ -170,8 +198,6 @@ export class Game extends BaseScene
         this.isDownDown = this.isTouchDownDown || this.cursors!.down.isDown;
 
         let vel: Phaser.Math.Vector2 = new Phaser.Math.Vector2();
-
-        this.lastMeganDirection = this.meganDirection;
 
         if (this.isUpDown) 
         {
@@ -195,21 +221,16 @@ export class Game extends BaseScene
             vel.x = -this.playerVelocity;
         }
 
-        vel = vel.normalize().scale(this.playerVelocity);        
+        vel = vel.normalize().scale(this.playerVelocity);
 
         if(vel.lengthSq() > 0) {
             this.megan.setVelocity(vel.x, vel.y);
-
-            if(this.lastMeganDirection != this.meganDirection)
-            {
-                console.log('here');
-                this.megan.play('megan_walk_' + this.meganDirection);
-            }
+            this.megan.play('megan_walk_' + this.meganDirection, true);
         } 
-        
+
         if(!this.isUpDown && !this.isDownDown && !this.isRightDown && !this.isLeftDown)
         {
-            this.megan.play('megan_idle_' + this.meganDirection);
+            this.megan.play('megan_idle_' + this.meganDirection, true);
         }
 
         if( (!this.isUpDown && this.isPreviousUpDown) ||

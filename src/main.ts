@@ -1,3 +1,4 @@
+import AnimatedTilesPlugin from './plugins/animated_tiles/animated_tiles';
 import { Boot } from './scenes/Boot';
 import { Game as MainGame } from './scenes/Game';
 import { GameOver } from './scenes/GameOver';
@@ -36,6 +37,16 @@ const config: Types.Core.GameConfig = {
             debug: true,
             gravity: {x: 0, y: 0}
         }
+    },
+
+    plugins: {
+        scene: [
+            {
+                key: 'animated_tiles',
+                plugin: AnimatedTilesPlugin,
+                mapping: 'animatedTiles'
+            }
+        ]
     }
 };
 
