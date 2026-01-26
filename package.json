@@ -4,7 +4,8 @@
     "main": "src/main.js",
     "scripts": {
         "dev": "webpack-dev-server --config webpack/config.dev.js --open",
-        "build": "webpack --config webpack/config.prod.js"
+        "build": "webpack --config webpack/config.prod.js",
+        "tiled": "xcopy \".\\public\\assets\\tiled\\scripts\\add_animations.js\" \"C:\\Users\\Jared Germano\\AppData\\Local\\Tiled\\extensions\" /Y"
     },
     "repository": {
         "type": "git",

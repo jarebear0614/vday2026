@@ -1,4 +1,4 @@
-import { GameObjects, Tilemaps, Types } from 'phaser';
+import { Display, GameObjects, Math, Tilemaps, Types } from 'phaser';
 import { Align } from '../util/align';
 import { DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
@@ -41,13 +41,28 @@ export class Game extends BaseScene
     isUpdating: boolean = true;
 
     map: Tilemaps.Tilemap;
-    mainTileset: Tilemaps.Tileset;
+    grassSpringTileset: Tilemaps.Tileset;
+    grassWaterSpringTileset: Tilemaps.Tileset;
+    waterFountainTileset: Tilemaps.Tileset;
+    birchTreeTileset: Tilemaps.Tileset;
+    housesTileset: Tilemaps.Tileset;
+    housingDecorationsTileset: Tilemaps.Tileset;
+
+    collidersLayer: Tilemaps.TilemapLayer;
+    aboveLayer: Tilemaps.TilemapLayer;
+    aboveDecoration1Layer: Tilemaps.TilemapLayer;
+    aboveDecoration2Layer: Tilemaps.TilemapLayer;
+    aboveDecoration3Layer: Tilemaps.TilemapLayer;
+
+    tilesets: Tilemaps.Tileset[] = [];
 
     xLimit: number = 0;
     yLimit: number = 0;
     tilemapScale: number = 0;
 
     public animatedTiles!: AnimatedTilesPlugin; 
+
+    debugGraphics: GameObjects.Graphics;
 
     constructor ()
     {
@@ -59,7 +74,15 @@ export class Game extends BaseScene
         this.load.spritesheet('megan_idle', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('megan_walk', 'assets/megan/Megan-Walk.png', {frameWidth: 32, frameHeight: 32});
 
-        this.load.image('grass_water_tileset', 'assets/tilesets/Tileset Grass Water Spring Extruded.png');
+        this.load.image('grass_spring_tileset', 'assets/tilesets/Grass Spring Extruded.png');
+        this.load.image('grass_water_spring_tileset', 'assets/tilesets/Grass Water Spring Extruded.png');
+        this.load.image('water_fountain_tileset', 'assets/tilesets/Water fountain extruded.png');
+
+        this.load.image('birch_tree_tileset', 'assets/tilesets/Birch Tree Extruded.png');
+
+        this.load.image('houses_tileset', 'assets/tilesets/Houses Extruded.png');
+        this.load.image('house_decorations_tileset', 'assets/tilesets/House Decorations Extruded.png');
+
         this.load.tilemapTiledJSON('main', 'assets/maps/main.tmj')
     }
 
@@ -72,10 +95,13 @@ export class Game extends BaseScene
 
         this.configureTilemaps();
         this.configurePlayer();
+        this.configureForegroundTilemaps();
         this.configureInput();
 
         this.animatedTiles.init(this.map);
         this.animatedTiles.setRate(0.5);
+
+        this.debugGraphics = this.add.graphics().setAlpha(0.75);
     }
 
     configurePlayer()
@@ -171,16 +197,56 @@ export class Game extends BaseScene
 
     private configureTilemaps() {        
         this.map = this.make.tilemap({key: 'main'});
-        this.mainTileset = this.map.addTilesetImage('Grass Water Spring Extruded', 'grass_water_tileset', 16, 16, 1, 2)!;
-        let backgroundLayer = this.map.createLayer('ground', [this.mainTileset], 0, 0);   
-        let backgroundLayerDecoration = this.map.createLayer('ground_decoration', [this.mainTileset], 0, 0);
+
+        this.grassSpringTileset = this.map.addTilesetImage('Grass Spring Extruded', 'grass_spring_tileset', 16, 16, 1, 2)!;
+        this.grassWaterSpringTileset = this.map.addTilesetImage('Grass Water Spring Extruded', 'grass_water_spring_tileset', 16, 16, 1, 2)!;
+        this.waterFountainTileset = this.map.addTilesetImage('Water fountain extruded', 'water_fountain_tileset', 16, 16, 1, 2)!;
+        this.birchTreeTileset = this.map.addTilesetImage('Birch Tree Extruded', 'birch_tree_tileset', 16, 16, 1, 2)!;
+        this.housesTileset = this.map.addTilesetImage('Houses Extruded', 'houses_tileset', 16, 16, 1, 2)!;
+        this.housingDecorationsTileset = this.map.addTilesetImage('House Decorations Extruded', 'house_decorations_tileset', 16, 16, 1, 2)!;
+
+        this.tilesets = 
+        [
+            this.grassSpringTileset,
+            this.grassWaterSpringTileset,
+            this.waterFountainTileset,
+            this.birchTreeTileset,
+            this.housesTileset,
+            this.housingDecorationsTileset
+        ];
+
+        let backgroundLayer = this.map.createLayer('ground', this.tilesets, 0, 0);   
+        let backgroundLayerDecoration = this.map.createLayer('ground_decoration', this.tilesets, 0, 0);
+        this.aboveLayer = this.map.createLayer('above', this.tilesets)!;
 
         this.tilemapScale = (this.getGameWidth() * TILE_SCALE) / TILE_SIZE;
         backgroundLayer?.setScale(this.tilemapScale, this.tilemapScale);
         backgroundLayerDecoration?.setScale(this.tilemapScale, this.tilemapScale);
+        this.aboveLayer.setScale(this.tilemapScale, this.tilemapScale);
 
         this.xLimit = this.map.widthInPixels * this.tilemapScale;
         this.yLimit = this.map.heightInPixels * this.tilemapScale;
+
+        this.housingDecorationsTileset.tileOffset = new Math.Vector2(0, this.housingDecorationsTileset.tileOffset.y * -this.tilemapScale);
+    }
+
+    //call after configuring the player
+    private configureForegroundTilemaps()
+    {
+        this.collidersLayer = this.map.createLayer('colliders', this.tilesets)!;
+        this.aboveLayer = this.map.createLayer('above', this.tilesets)!;
+        this.aboveDecoration1Layer = this.map.createLayer('above_decoration_1', this.tilesets)!;        
+        this.aboveDecoration2Layer = this.map.createLayer('above_decoration_2', this.tilesets)!;
+        this.aboveDecoration3Layer = this.map.createLayer('above_decoration_3', this.tilesets)!;
+
+        this.collidersLayer.setScale(this.tilemapScale, this.tilemapScale);
+        
+        this.aboveDecoration1Layer.setScale(this.tilemapScale, this.tilemapScale);
+        this.aboveDecoration2Layer.setScale(this.tilemapScale, this.tilemapScale);
+        this.aboveDecoration3Layer.setScale(this.tilemapScale, this.tilemapScale);
+
+        this.physics.add.collider(this.megan, this.collidersLayer);
+        this.collidersLayer.setCollisionByExclusion([-1], true);
     }
 
     update(_: number, __: number)

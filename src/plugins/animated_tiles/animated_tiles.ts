@@ -72,7 +72,7 @@ export default class AnimatedTilesPlugin extends Plugins.ScenePlugin {
     boot(): void 
     {
         if(this.systems != null) {
-        var eventEmitter = this.systems.events;
+            var eventEmitter = this.systems.events;
             eventEmitter.on('postupdate', this.postUpdate, this);
             eventEmitter.on('shutdown', this.shutdown, this);
             eventEmitter.on('destroy', this.destroy, this);

@@ -1,7 +1,6 @@
 let myAction = tiled.registerAction("AddTilesetAnimations", function(action) {
 	//do your thing
     let asset = tiled.activeAsset;
-    console.log(asset);
     if(!asset.isTileset) 
     {
         tiled.alert("Please open a tileset first.");
@@ -12,21 +11,28 @@ let myAction = tiled.registerAction("AddTilesetAnimations", function(action) {
 
     for(let i = 0; i < tileset.tiles.length; ++i)
     {
-        let tile = tileset.tiles[i].frames = [];
+        tileset.tiles[i].frames = [];
     }
 
-    let frameCount = 4;
-    let perRow = 48;
-    let spacing = 12;
+    let frameCount = tileset.property('frameCount');
+    let perRow = tileset.property('perRow');
+    let spacing = tileset.property('spacing');
+    let rows = tileset.property('rows');
+    let frameDuration = tileset.property('defaultFrameDuration'); //ms
+    let loopBack = tileset.property('loopBack') ?? false;
 
-    let rows = 16;
-
-    let frameDuration = 200; //ms
+    let ignoreTileIds = tileset.property('ignoreTileIds').trim().length == 0 ? [] : tileset.property('ignoreTileIds').trim().split(',');
+    let ignoreTileIdsProcessed = ignoreTileIds.map((s) => { return parseInt(s); });
 
     for(let r = 0; r < rows; r += 1)
     {
         for(let c = r * perRow; c < (r * perRow) + spacing; ++c)
         {            
+            if(ignoreTileIdsProcessed.find((f) => {return f == c}))
+            {
+                continue;
+            }
+
             let tile = tileset.tile(c);
             if(!tile)
             {
@@ -44,12 +50,15 @@ let myAction = tiled.registerAction("AddTilesetAnimations", function(action) {
                 });
             }
 
-            for(let f = (c + (frameCount - 1) * spacing); f >= c; f -= spacing)
+            if(loopBack)
             {
-                frames.push({
-                    tileId: f,
-                    duration: frameDuration
-                });
+                for(let f = (c + (frameCount - 1) * spacing); f >= c; f -= spacing)
+                {
+                    frames.push({
+                        tileId: f,
+                        duration: frameDuration
+                    });
+                }
             }
 
             tile.frames = frames;
