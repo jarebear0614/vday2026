@@ -9,6 +9,14 @@ export class Align {
         object.scaleY = object.scaleX;
     }
 
+    public static scaleObjectsToGameWidth(objects: (Phaser.GameObjects.Components.Size & Phaser.GameObjects.Components.Transform)[], percentage: number, scene: BaseScene) 
+    {
+        for(const o of objects)
+        {
+            this.scaleToGameWidth(o, percentage, scene);
+        }
+    }
+
     public static scaleToGameHeight(object: Phaser.GameObjects.Components.Size & Phaser.GameObjects.Components.Transform, percentage: number, scene: BaseScene) 
     {
         let height = scene.getGameHeight();
