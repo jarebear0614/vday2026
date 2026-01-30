@@ -1,4 +1,4 @@
-import { Animations, GameObjects, Tilemaps, Types } from 'phaser';
+import { Animations, GameObjects, Sound, Tilemaps, Types } from 'phaser';
 import { Align } from '../util/align';
 import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DEFAULT_BUTTERFLY_SPRITE_FRAMERATE, DEFAULT_CATCH_SPRITE_FRAMERATE, DEFAULT_EFFECT_FRAMERATE, DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, HAIRSTREAK_BUTTERFLY_NAME, LUNAMOTH_BUTTERFLY_NAME, PERIANDER_BUTTERFLY_NAME, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
@@ -56,10 +56,19 @@ export class Game extends BaseScene
     map: Tilemaps.Tilemap;
     grassSpringTileset: Tilemaps.Tileset;
     grassWaterSpringTileset: Tilemaps.Tileset;
+    grassDeepForestTileset: Tilemaps.Tileset;
+    grassWaterDeepForestTileset: Tilemaps.Tileset;
     waterFountainTileset: Tilemaps.Tileset;
     birchTreeTileset: Tilemaps.Tileset;
+    pineTreeTileset: Tilemaps.Tileset;
     housesTileset: Tilemaps.Tileset;
     housingDecorationsTileset: Tilemaps.Tileset;
+    bigTreeTileset: Tilemaps.Tileset;
+    deepForestBushes: Tilemaps.Tileset;
+    deepForestFantasyMushroom1: Tilemaps.Tileset;
+    deepForestFantasyMushroom2: Tilemaps.Tileset;
+    deepForestMushroomTree: Tilemaps.Tileset;
+    deepForestTrees: Tilemaps.Tileset;
 
     collidersLayer: Tilemaps.TilemapLayer;
     above1Layer: Tilemaps.TilemapLayer;
@@ -79,11 +88,24 @@ export class Game extends BaseScene
 
     sparkleSprite: GameObjects.Sprite;
 
+    theme: Sound.BaseSound;
+
     public animatedTiles!: AnimatedTilesPlugin; 
 
     constructor ()
     {
         super('Game');
+    }
+
+    init()
+    {
+        this.cameras.main.fadeOut(1);
+
+        this.load.on('complete', (loader: any, totalComplete: number, totalFailed: number) => 
+        {
+            console.log(loader, totalComplete, totalFailed);
+            this.cameras.main.fadeIn(300);
+        });
     }
 
     preload()
@@ -107,14 +129,26 @@ export class Game extends BaseScene
 
         this.load.image('grass_spring_tileset', 'assets/tilesets/Grass Spring Extruded.png');
         this.load.image('grass_water_spring_tileset', 'assets/tilesets/Grass Water Spring Extruded.png');
+        this.load.image('grass_deep_forest_tileset', 'assets/tilesets/Grass Deep Forest Extruded.png');
+        this.load.image('grass_water_deep_forest_tileset', 'assets/tilesets/Grass Water Deep Forest Extruded.png');
         this.load.image('water_fountain_tileset', 'assets/tilesets/Water fountain extruded.png');
 
         this.load.image('birch_tree_tileset', 'assets/tilesets/Birch Tree Extruded.png');
+        this.load.image('pine_tree_tileset', 'assets/tilesets/Pine Tree Extruded.png');
 
         this.load.image('houses_tileset', 'assets/tilesets/Houses Extruded.png');
         this.load.image('house_decorations_tileset', 'assets/tilesets/House Decorations Extruded.png');
 
-        this.load.tilemapTiledJSON('main', 'assets/maps/main.tmj')
+        this.load.image('big_tree_tileset', 'assets/tilesets/Big Tree Extruded.png');
+        this.load.image('deep_forest_bushes_tileset', 'assets/tilesets/Deep Forest Bushes Extruded.png');
+        this.load.image('deep_forest_mushroom1_tileset', 'assets/tilesets/Deep Forest Fantasy Mushroom 1 Extruded.png');
+        this.load.image('deep_forest_mushroom2_tileset', 'assets/tilesets/Deep Forest Fantasy Mushroom 2 Extruded.png');
+        this.load.image('deep_forest_mushroom_tree_tileset', 'assets/tilesets/Deep Forest Mushroom Tree Extruded.png');
+        this.load.image('deep_forest_tree_tileset', 'assets/tilesets/Deep Forest Tree Extruded.png');
+
+        this.load.tilemapTiledJSON('main', 'assets/maps/main.tmj');
+
+        this.load.audio('labyrinth', 'assets/music/labyrinth.mp3');
     }
 
     create ()
@@ -133,6 +167,7 @@ export class Game extends BaseScene
         this.configureInput();
         this.configureButterflies();
         this.configureUI();
+        this.configureMusic();
 
         this.animatedTiles.init(this.map);
         this.animatedTiles.setRate(0.5);
@@ -364,21 +399,40 @@ export class Game extends BaseScene
 
         this.grassSpringTileset = this.map.addTilesetImage('Grass Spring Extruded', 'grass_spring_tileset', 16, 16, 1, 2)!;
         this.grassWaterSpringTileset = this.map.addTilesetImage('Grass Water Spring Extruded', 'grass_water_spring_tileset', 16, 16, 1, 2)!;
+        this.grassDeepForestTileset = this.map.addTilesetImage('Grass Deep Forest Extruded', 'grass_deep_forest_tileset', 16, 16, 1, 2)!;
+        this.grassWaterDeepForestTileset = this.map.addTilesetImage('Grass Water Deep Forest Extruded', 'grass_water_deep_forest_tileset', 16, 16, 1, 2)!;
         this.waterFountainTileset = this.map.addTilesetImage('Water fountain extruded', 'water_fountain_tileset', 16, 16, 1, 2)!;
         this.birchTreeTileset = this.map.addTilesetImage('Birch Tree Extruded', 'birch_tree_tileset', 16, 16, 1, 2)!;
+        this.pineTreeTileset = this.map.addTilesetImage('Pine Tree Extruded', 'pine_tree_tileset', 16, 16, 1, 2)!;
         this.housesTileset = this.map.addTilesetImage('Houses Extruded', 'houses_tileset', 16, 16, 1, 2)!;
 
         this.housingDecorationsTileset = this.map.addTilesetImage('House Decorations Extruded', 'house_decorations_tileset', 16, 16, 1, 2)!;
         this.housingDecorationsTileset.tileOffset = new Phaser.Math.Vector2(0, this.housingDecorationsTileset.tileOffset.y * -this.tilemapScale);
 
+        this.bigTreeTileset = this.map.addTilesetImage('Big Tree Extruded', 'big_tree_tileset', 16, 16, 1, 2)!
+        this.deepForestBushes = this.map.addTilesetImage('Deep Forest Bushes Extruded', 'deep_forest_bushes_tileset', 16, 16, 1, 2)!
+        this.deepForestFantasyMushroom1 = this.map.addTilesetImage('Deep Forest Fantasy Mushroom 1 Extruded', 'deep_forest_mushroom1_tileset', 16, 16, 1, 2)!
+        this.deepForestFantasyMushroom2 = this.map.addTilesetImage('Deep Forest Fantasy Mushroom 2 Extruded', 'deep_forest_mushroom2_tileset', 16, 16, 1, 2)!
+        this.deepForestMushroomTree = this.map.addTilesetImage('Deep Forest Mushroom Tree Extruded', 'deep_forest_mushroom_tree_tileset', 16, 16, 1, 2)!
+        this.deepForestTrees = this.map.addTilesetImage('Deep Forest Tree Extruded', 'deep_forest_tree_tileset', 16, 16, 1, 2)!
+
         this.tilesets = 
         [
             this.grassSpringTileset,
             this.grassWaterSpringTileset,
+            this.grassDeepForestTileset,
+            this.grassWaterDeepForestTileset,
             this.waterFountainTileset,
             this.birchTreeTileset,
             this.housesTileset,
-            this.housingDecorationsTileset
+            this.housingDecorationsTileset,
+            this.pineTreeTileset,
+            this.bigTreeTileset,
+            this.deepForestBushes,
+            this.deepForestFantasyMushroom1,
+            this.deepForestFantasyMushroom2,
+            this.deepForestMushroomTree,
+            this.deepForestTrees
         ];
 
         let backgroundLayer = this.map.createLayer('ground', this.tilesets, 0, 0);   
@@ -510,6 +564,22 @@ export class Game extends BaseScene
         this.hairstreakButterflyIcon.setPosition(this.birdwingButterflyIcon.x + this.birdwingButterflyIcon.displayWidth + spacing, y);
         this.lunaMothButterflyIcon.setPosition(this.hairstreakButterflyIcon.x + this.hairstreakButterflyIcon.displayWidth + spacing, y);
         this.perianderMetalmarkButterflyIcon.setPosition(this.lunaMothButterflyIcon.x + this.lunaMothButterflyIcon.displayWidth + spacing, y);
+    }
+
+    configureMusic()
+    {
+        if(!this.theme)
+        {
+            this.theme = this.sound.add('labyrinth', {
+                loop: true,
+                volume: 0.35
+            });
+        }
+
+        if(!this.theme.isPlaying)
+        {
+            this.theme.play();
+        }
     }
 
     update(time: number, _: number)

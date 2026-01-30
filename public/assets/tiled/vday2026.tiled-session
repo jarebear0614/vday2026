@@ -43,15 +43,21 @@
             "scaleInEditor": 3
         },
         "maps/automapper.tmx": {
-            "scale": 4,
-            "selectedLayer": 8,
+            "scale": 1.5,
+            "selectedLayer": 5,
             "viewCenter": {
-                "x": 247.625,
-                "y": 160.125
+                "x": 627,
+                "y": 181.33333333333331
             }
         },
         "maps/automapper.tmx#Birch Tree Extruded": {
             "scaleInDock": 3
+        },
+        "maps/automapper.tmx#Deep Forest Fantasy Mushroom 1 Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/automapper.tmx#Deep Forest Tree Extruded": {
+            "scaleInDock": 1
         },
         "maps/automapper.tmx#Grass Spring Extruded": {
             "scaleInDock": 1
@@ -63,24 +69,51 @@
         "maps/automapper.tmx#Houses Extruded": {
             "scaleInDock": 0.75
         },
+        "maps/automapper.tmx#Pine Tree Extruded": {
+            "scaleInDock": 1
+        },
         "maps/grass_spring.tsx": {
             "scaleInDock": 3,
             "scaleInEditor": 1
         },
         "maps/main.tmx": {
             "scale": 4,
-            "selectedLayer": 11,
+            "selectedLayer": 3,
             "viewCenter": {
                 "x": 103.375,
                 "y": 296.5
             }
         },
+        "maps/main.tmx#Big Tree Extruded": {
+            "scaleInDock": 1
+        },
         "maps/main.tmx#Birch Tree Extruded": {
             "scaleInDock": 2,
             "scaleInEditor": 1
         },
+        "maps/main.tmx#Deep Forest Bushes Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/main.tmx#Deep Forest Fantasy Mushroom 1 Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/main.tmx#Deep Forest Fantasy Mushroom 2 Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/main.tmx#Deep Forest Mushroom Tree Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/main.tmx#Deep Forest Tree Extruded": {
+            "scaleInDock": 1
+        },
+        "maps/main.tmx#Grass Deep Forest Extruded": {
+            "scaleInDock": 1.5
+        },
         "maps/main.tmx#Grass Spring Extruded": {
             "scaleInDock": 2
+        },
+        "maps/main.tmx#Grass Water Deep Forest Extruded": {
+            "scaleInDock": 1
         },
         "maps/main.tmx#Grass Water Spring Extruded": {
             "scaleInDock": 3,
@@ -92,6 +125,9 @@
         },
         "maps/main.tmx#Houses Extruded": {
             "scaleInDock": 2
+        },
+        "maps/main.tmx#Pine Tree Extruded": {
+            "scaleInDock": 1
         },
         "maps/main.tmx#Water fountain extruded": {
             "scaleInDock": 1,
