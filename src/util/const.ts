@@ -1,4 +1,4 @@
-export const DEFAULT_SPRITE_SCALE = 0.12;
+export const DEFAULT_SPRITE_SCALE = 0.18;
 export const DEFAULT_BUTTERFLY_SCALE = 0.075;
 
 export const DEFAULT_EFFECT_FRAMERATE = 10 * (2/3);

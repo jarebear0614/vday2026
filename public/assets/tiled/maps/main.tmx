@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="6">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="16" nextobjectid="7">
  <editorsettings>
   <export target="../../maps/main.tmj" format="json"/>
  </editorsettings>
@@ -5441,5 +5441,15 @@
  </objectgroup>
  <objectgroup id="7" name="map_transport"/>
  <objectgroup id="8" name="map_interactive"/>
- <objectgroup id="9" name="map_character"/>
+ <objectgroup id="9" name="map_character">
+  <object id="6" name="Jared" x="199.333" y="135.333">
+   <properties>
+    <property name="instance" value="jared0"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;random&quot;,
+  &quot;radius&quot;: 5
+}</property>
+   </properties>
+  </object>
+ </objectgroup>
 </map>

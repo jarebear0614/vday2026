@@ -46,8 +46,8 @@
             "scale": 1.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 627,
-                "y": 181.33333333333331
+                "x": 480.33333333333337,
+                "y": 160
             }
         },
         "maps/automapper.tmx#Birch Tree Extruded": {
@@ -77,11 +77,11 @@
             "scaleInEditor": 1
         },
         "maps/main.tmx": {
-            "scale": 4,
-            "selectedLayer": 3,
+            "scale": 1.5,
+            "selectedLayer": 14,
             "viewCenter": {
-                "x": 103.375,
-                "y": 296.5
+                "x": 480.33333333333337,
+                "y": 480
             }
         },
         "maps/main.tmx#Big Tree Extruded": {
@@ -113,7 +113,8 @@
             "scaleInDock": 2
         },
         "maps/main.tmx#Grass Water Deep Forest Extruded": {
-            "scaleInDock": 1
+            "scaleInDock": 1,
+            "scaleInEditor": 1
         },
         "maps/main.tmx#Grass Water Spring Extruded": {
             "scaleInDock": 3,

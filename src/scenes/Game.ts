@@ -3,6 +3,9 @@ import { Align } from '../util/align';
 import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DEFAULT_BUTTERFLY_SPRITE_FRAMERATE, DEFAULT_CATCH_SPRITE_FRAMERATE, DEFAULT_EFFECT_FRAMERATE, DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, HAIRSTREAK_BUTTERFLY_NAME, LUNAMOTH_BUTTERFLY_NAME, PERIANDER_BUTTERFLY_NAME, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
 import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
+import { CharacterMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
+import { NPC } from '../character/NPC';
+import { ICharacterMovement } from '../movement/ICharacterMovement';
 
 export class Game extends BaseScene
 {
@@ -90,6 +93,8 @@ export class Game extends BaseScene
 
     theme: Sound.BaseSound;
 
+    npcs: NPC[] = [];
+
     public animatedTiles!: AnimatedTilesPlugin; 
 
     constructor ()
@@ -114,6 +119,9 @@ export class Game extends BaseScene
         this.load.spritesheet('megan_idle', 'assets/megan/Megan-Idle.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('megan_walk', 'assets/megan/Megan-Walk.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('megan_catching', 'assets/megan/Megan-Catching.png', {frameWidth: 32, frameHeight: 32});
+
+        this.load.spritesheet('jared_idle', 'assets/jared/Jared-Idle.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('jared_walk', 'assets/jared/Jared-Walk.png', {frameWidth: 32, frameHeight: 32});
 
         this.load.spritesheet('birdwing_butterfly_icon', 'assets/sprites/butterflies/icons/Birdwing Butterfly.png', {frameWidth: 16, frameHeight: 16});
         this.load.spritesheet('hairstreak_butterfly_icon', 'assets/sprites/butterflies/icons/Hairstreak Butterfly.png', {frameWidth: 16, frameHeight: 16});
@@ -165,6 +173,7 @@ export class Game extends BaseScene
         this.configureAnimationEvents();
         this.configureForegroundTilemaps();
         this.configureInput();
+        this.configureCharacterObjects();
         this.configureButterflies();
         this.configureUI();
         this.configureMusic();
@@ -181,7 +190,7 @@ export class Game extends BaseScene
     configurePlayer()
     {
         this.megan = this.physics.add.sprite(100, 100, 'megan', 0).setOrigin(0, 0).setGravity(0, 0);
-        Align.scaleToGameWidth( this.megan, DEFAULT_SPRITE_SCALE * 1.5, this);
+        Align.scaleToGameWidth(this.megan, DEFAULT_SPRITE_SCALE, this);
 
         this.anims.create({
             key: 'megan_idle_down',
@@ -474,6 +483,50 @@ export class Game extends BaseScene
         this.collidersLayer.setCollisionByExclusion([-1], true);
     }
 
+    configureCharacterObjects()
+    {
+        let characterObjects = this.map.getObjectLayer('map_character')!.objects;
+
+        for(const character of characterObjects) 
+        {
+            const {x, y, name, properties} = character;
+
+            let instance: string = '';
+            let movement: CharacterMovementConfig = new CharacterMovementConfig();
+
+            for (const property of properties) 
+            {
+                switch (property.name) {
+                    case "instance":
+                        instance = property.value;
+                        break;
+                    case 'movement':
+                        movement = JSON.parse(property.value.toString());
+                        break;
+                }
+            }
+
+            let body = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, name.toLowerCase(), 0);
+            Align.scaleToGameWidth(body, DEFAULT_SPRITE_SCALE, this);
+            let newCharacter = new NPC(this, name, instance, body, this.getMovementFromConfig(x! * this.tilemapScale, y! * this.tilemapScale, movement));
+
+            this.npcs.push(newCharacter);
+        }
+    }
+
+    private getMovementFromConfig(x: number, y: number, config: CharacterMovementConfig): ICharacterMovement
+    {
+        switch(config.type)
+        {
+            case "random":
+                return new RandomInRadiusCharacterMovement(x, y, 16 * this.tilemapScale * config.radius);
+            case "waypoint":
+                return new WaypointCharacterMovement(x, y, this.tilemapScale, config);
+            default:
+                return new NopCharacterMovement();
+        }
+    }
+
     configureButterflies()
     {
         let butterflyObjects = this.map.getObjectLayer('map_butterflies')!.objects;
@@ -582,7 +635,7 @@ export class Game extends BaseScene
         }
     }
 
-    update(time: number, _: number)
+    update(time: number, delta: number)
     {
         if(!this.isUpdating)
         {
@@ -667,6 +720,11 @@ export class Game extends BaseScene
         }
 
         this.updateButterflies(time);
+
+        for(const npc of this.npcs)
+        {
+            npc.update(delta);
+        }
 
         // if(this.megan.x + vel.x > this.xLimit || 
         //    this.megan.x + vel.x < 0 || 
