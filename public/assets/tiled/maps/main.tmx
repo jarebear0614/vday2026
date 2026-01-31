@@ -5442,8 +5442,11 @@
  <objectgroup id="7" name="map_transport"/>
  <objectgroup id="8" name="map_interactive"/>
  <objectgroup id="9" name="map_character">
-  <object id="6" name="Jared" x="199.333" y="135.333">
+  <object id="6" name="Jared" type="character" x="199.333" y="135.333">
    <properties>
+    <property name="eventKeyEnd" type="int" value="1"/>
+    <property name="eventKeyTrigger" type="int" value="0"/>
+    <property name="eventName" value="jared"/>
     <property name="instance" value="jared0"/>
     <property name="movement">{
   &quot;type&quot;: &quot;random&quot;,

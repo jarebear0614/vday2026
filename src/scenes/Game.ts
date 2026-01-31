@@ -4,8 +4,14 @@ import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DE
 import { BaseScene } from './BaseScene';
 import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
 import { CharacterMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
-import { NPC } from '../character/NPC';
+import { NPC, NPCEventConfig } from '../character/NPC';
 import { ICharacterMovement } from '../movement/ICharacterMovement';
+
+import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
+import { Interactive, InteractiveConfig, InteractiveTriggerConfig } from '../events/interactive';
+import { EVENT_KEY_MAX, GameEventManager } from '../events/gameEvents';
+import { EndAction, NPCEventUtility, OverlapAction } from '../events/dialog';
+import { npcEvents } from '../util/events';
 
 export class Game extends BaseScene
 {
@@ -94,8 +100,13 @@ export class Game extends BaseScene
     theme: Sound.BaseSound;
 
     npcs: NPC[] = [];
+    currentInteractiveObject: Interactive | null = null;
+    gameEventManager: GameEventManager = new GameEventManager();
 
-    public animatedTiles!: AnimatedTilesPlugin; 
+    animatedTiles!: AnimatedTilesPlugin; 
+    
+    rexUI: RexUIPlugin;
+    dialog: RexUIPlugin.Dialog | null;
 
     constructor ()
     {
@@ -105,6 +116,8 @@ export class Game extends BaseScene
     init()
     {
         this.cameras.main.fadeOut(1);
+
+        this.currentInteractiveObject = null;
 
         this.load.on('complete', (loader: any, totalComplete: number, totalFailed: number) => 
         {
@@ -157,11 +170,19 @@ export class Game extends BaseScene
         this.load.tilemapTiledJSON('main', 'assets/maps/main.tmj');
 
         this.load.audio('labyrinth', 'assets/music/labyrinth.mp3');
+
+        this.load.scenePlugin({
+            key: 'rexuiplugin',
+            url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
+            sceneKey: 'rexUI'
+        });    
     }
 
     create ()
     {
         super.create();
+
+        this.gameEventManager.purgeCharactersFromEvents();
 
         this.camera = this.cameras.main;
         this.camera.setBackgroundColor(0x000000);
@@ -178,6 +199,9 @@ export class Game extends BaseScene
         this.configureUI();
         this.configureMusic();
 
+        
+        this.configureEvent();
+
         this.animatedTiles.init(this.map);
         this.animatedTiles.setRate(0.5);
     }
@@ -189,7 +213,7 @@ export class Game extends BaseScene
 
     configurePlayer()
     {
-        this.megan = this.physics.add.sprite(100, 100, 'megan', 0).setOrigin(0, 0).setGravity(0, 0);
+        this.megan = this.physics.add.sprite(100, 100, 'megan', 0).setSize(TILE_SIZE, TILE_SIZE).setOrigin(0, 0).setGravity(0, 0);
         Align.scaleToGameWidth(this.megan, DEFAULT_SPRITE_SCALE, this);
 
         this.anims.create({
@@ -486,13 +510,17 @@ export class Game extends BaseScene
     configureCharacterObjects()
     {
         let characterObjects = this.map.getObjectLayer('map_character')!.objects;
+        let localNpcs: NPC[] = [];
 
         for(const character of characterObjects) 
         {
-            const {x, y, name, properties} = character;
+            const {x, y, name, properties, type } = character;
 
             let instance: string = '';
             let movement: CharacterMovementConfig = new CharacterMovementConfig();
+            let eventKeyTrigger: number = 0;
+            let eventKeyEnd: number | undefined = undefined;
+            let eventName: string = "";
 
             for (const property of properties) 
             {
@@ -503,14 +531,98 @@ export class Game extends BaseScene
                     case 'movement':
                         movement = JSON.parse(property.value.toString());
                         break;
+                    case "eventName":
+                        eventName = property.value;
+                        break;
+                    case 'eventKeyTrigger':
+                        eventKeyTrigger = parseInt(property.value);
+                        break;
+                    case 'eventKeyEnd':
+                        eventKeyEnd = parseInt(property.value);
+                        break;
                 }
             }
 
-            let body = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, name.toLowerCase(), 0);
-            Align.scaleToGameWidth(body, DEFAULT_SPRITE_SCALE, this);
-            let newCharacter = new NPC(this, name, instance, body, this.getMovementFromConfig(x! * this.tilemapScale, y! * this.tilemapScale, movement));
+            let dialog = npcEvents[eventName].npc.find((f) => { return f.instance == instance; });
 
-            this.npcs.push(newCharacter);
+            let npcEventConfig: NPCEventConfig = new NPCEventConfig();
+            if(eventName !== "")
+            {
+                npcEventConfig.eventName = eventName;
+                npcEventConfig.eventKeyTrigger = eventKeyTrigger
+                npcEventConfig.eventKeyEnd = eventKeyEnd;
+            }
+
+            let possibleExistingNPC = localNpcs.find((c) =>
+            {
+                return c.name == name && c.instance == instance;
+            });
+
+
+            let newNPC = possibleExistingNPC ? possibleExistingNPC : new NPC(this, 
+                                       name, 
+                                       instance, 
+                                       x!, 
+                                       y!, 
+                                       this.tilemapScale, 
+                                       this.getMovementFromConfig(x! * this.tilemapScale, y! * this.tilemapScale, movement), 
+                                       npcEventConfig,
+                                       {
+                                            player: this.megan,
+                                            overlapCallback: () =>
+                                            {   
+                                                newNPC.movement?.pause();
+                                                let ev = this.gameEventManager.getCurrentEventProgress(eventName);
+                                                if(ev !== undefined)
+                                                {
+                                                    let messages = NPCEventUtility.findEventByKey(dialog!, ev);
+                                                    if(messages !== undefined)
+                                                    {
+                                                        if(ev >= eventKeyTrigger)
+                                                        {
+                                                            this.currentInteractiveObject = new Interactive(messages.dialog, type, eventName, eventKeyTrigger, {
+                                                                title: name,
+                                                                endAction: messages.onEnd,
+                                                                sourceCharacter: newNPC,
+                                                                grantedItem: messages.item,
+                                                                sceneTransition: messages.scene ? {
+                                                                    toScene: messages.scene,
+                                                                    fromX: messages.fromX ?? 0,
+                                                                    fromY: messages.fromY ?? 0
+                                                                } : undefined
+                                                            });
+
+                                                            if(messages.overlapAction == OverlapAction.autoTrigger)
+                                                            {
+                                                                this.triggerInteractiveEvent({
+                                                                    type: this.currentInteractiveObject?.type ?? 'sign',
+                                                                    interactive: this.currentInteractiveObject,
+                                                                    scene: undefined
+                                                                });
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            },
+                                       });
+
+            if(!possibleExistingNPC)
+            {
+                localNpcs.push(newNPC);
+            }
+
+            for(let d of dialog?.events ?? [])
+            {
+                this.gameEventManager.addEvent(eventName, d.eventKey, [newNPC]);                     
+
+                for(let npc of localNpcs)
+                {
+                    if(npc.eventConfig?.eventName == eventName && (npc.getEventKeyEnd() ?? EVENT_KEY_MAX) < (eventKeyEnd ?? EVENT_KEY_MAX))
+                    {
+                        this.gameEventManager.addEvent(eventName, d.eventKey, [npc]);
+                    }
+                }
+            }
         }
     }
 
@@ -712,11 +824,41 @@ export class Game extends BaseScene
 
             if(!this.isPreviousInteractKeyDown && this.isInteractKeyDown)
             {
-                this.megan.play('megan_catching_' + this.meganDirection, true);
-                this.isCatching = true;
-                this.megan.setVelocity(0, 0);
+                // this.megan.play('megan_catching_' + this.meganDirection, true);
+                // this.isCatching = true;
+                // this.megan.setVelocity(0, 0);
                 //console.log(this.map.getTileAtWorldXY(this.megan.x, this.megan.y, true, this.camera));
+                console.log('here');
+                this.triggerInteractiveEvent({
+                    type: this.currentInteractiveObject?.type ?? 'sign',
+                    interactive: this.currentInteractiveObject,
+                    scene: this.currentInteractiveObject?.sceneTransition
+                });
             }
+
+            this.wasPlayerTouching = this.playerTouching;
+            this.playerTouching = this.megan.body.embedded;
+            
+            if(this.wasPlayerTouching && !this.playerTouching) 
+            {
+                this.currentInteractiveObject?.sourceCharacter?.movement?.unpause();
+                this.currentInteractiveObject = null;
+            }
+
+            let events = this.gameEventManager.getCurrentGameEvents();
+            for(let ev of events)
+            {
+                ev.update(delta);
+            }
+
+            // if(this.currentInteractiveObject && !this.interactText.visible)
+            // {
+            //     this.interactText.setVisible(true);
+            // }
+            // else if(this.currentInteractiveObject == null && this.interactText.visible)
+            // {
+            //     this.interactText.setVisible(false);
+            // }
         }
 
         this.updateButterflies(time);
@@ -745,4 +887,213 @@ export class Game extends BaseScene
             butterfly.setPosition(butterfly.x + xCycle, butterfly.y + yCycle);
         }
     }
+
+    private configureEvent() 
+    {
+        let events = this.gameEventManager.getCurrentGameEvents();
+
+        for(let i = 0; i < events.length; ++i)
+        {
+            events[i].activate();
+        }
+    }
+
+    private incrementEvent(name: string | undefined) 
+    {
+        if(name)
+        {
+            this.gameEventManager.incrementEvent(name);      
+            this.configureEvent();
+        }
+    }
+
+    private triggerInteractiveEvent(config: InteractiveTriggerConfig) 
+    {
+        if(!config)
+        {
+            return;
+        }
+
+        if (config.interactive !== null) {
+            switch (config.type) {
+                case "sign":
+                case "character":
+                    if(config.interactive)
+                    {
+                        this.showDialog(config.interactive.messages, {
+                            title: config.interactive.title,
+                            endAction: config.interactive.endAction,
+                            sourceCharacter: config.interactive.sourceCharacter,
+                            grantedItem: config.interactive.grantedItem
+                        });
+                    }
+                    break;
+
+                // case "scene":
+                //     if(config.scene)
+                //     {
+                //         this.triggerSceneFromConfig(config.scene);
+                //     }
+                //     break;
+
+                // case "grantItem":
+                //     if(config.interactive && config.interactive.grantedItem)
+                //     {
+                //         this.showDialog(config.interactive.messages, {
+                //             title: config.interactive.title,
+                //             endAction: config.interactive.endAction,
+                //             sourceCharacter: config.interactive.sourceCharacter,
+                //             grantedItem: config.interactive.grantedItem
+                //         });
+
+                //         this.grantItem(config.interactive.grantedItem, config.interactive.eventName)
+                //     }
+                //     break;
+            }
+        }
+    }
+
+    private showDialog(messages: string[], config?: InteractiveConfig)
+    {             
+        if(this.dialog != null) 
+        {
+            return;
+        }
+
+        let messagesIndex = 0;
+
+        this.dialog = this.rexUI.add.dialog({
+            x: this.getGameWidth() * 0.10 + (this.getGameWidth() * 0.85) / 2,
+            y: this.getGameHeight() * 0.80,
+            width: this.getGameWidth() * 0.85,
+
+            background: this.rexUI.add.roundRectangle(0, 0, 40, 100, 20, 0x58a780),
+            title: config?.title === undefined ? undefined : this.rexUI.add.label({
+                background: this.rexUI.add.roundRectangle(0, 0, 40, 40, 20, 0x79B999),
+                text: this.add.text(0, 0, config?.title ?? 'Error', {fontSize: '24px'}),
+                space: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            }),
+
+            content: this.rexUI.add.label({
+                background: undefined,
+
+                text: this.rexUI.wrapExpandText(this.add.text(0, 0, messages[messagesIndex])),
+                expandTextWidth: true
+            }),
+
+            actions: [this.rexUI.add.label({
+                background: this.rexUI.add.roundRectangle(0, 0, 40, 40, 20, 0x79B999),
+                text: this.add.text(0, 0, messages.length > 1 ? 'Next' : 'Close'),
+                space: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            })],
+
+            space: {
+                left: 20,
+                right: 20,
+                top: config?.title === undefined ? 20 : -20,
+                bottom: 20,
+
+                title: 25,
+                content: 25,
+                description: 25,
+                descriptionLeft: 20,
+                descriptionRight: 20,
+                choices: 25,
+
+                toolbarItem: 5,
+                choice: 15,
+                action: 15,
+            },
+
+            expand:
+            {
+                content: true,
+                title: false
+            },
+
+            align: {
+                title: 'left',
+                actions: 'right'
+            },
+
+            click: {
+                mode: 'release'
+            }
+        }).layout().setScrollFactor(0).popUp(1000);
+
+        this.dialog
+            .on('button.click', (button: any, groupName: string, index: number, pointer: Phaser.Input.Pointer, event: Event) => 
+            {
+                if(groupName === 'actions')
+                {
+                    messagesIndex = messagesIndex + 1;
+
+                    if(messagesIndex == messages.length - 1)
+                    {
+                        let actions = this.dialog?.getElement('actions') as RexUIPlugin.Label[];
+                        actions[0].text = "Close";
+                        this.dialog?.layout();
+                    }
+                    else if(messagesIndex == messages.length) 
+                    {
+                        this.dialog?.scaleDownDestroy(300);
+                        this.dialog = null;
+
+                        config?.sourceCharacter?.movement?.unpause();
+
+                        let endAction = config?.endAction ?? this.currentInteractiveObject?.endAction ?? EndAction.nop;
+                        let eventName = config?.eventName ?? this.currentInteractiveObject?.eventName ?? undefined;
+
+                        if(endAction == EndAction.incrementEvent) 
+                        {
+                            this.incrementEvent(eventName);
+                        }
+                        else if(endAction == EndAction.startScene && this.currentInteractiveObject && this.currentInteractiveObject.sceneTransition)
+                        {
+                            //this.triggerSceneFromConfig(this.currentInteractiveObject.sceneTransition);
+                        }
+                        else if(endAction == EndAction.grantItem && config?.grantedItem)
+                        {
+                            //this.grantItem(config.grantedItem, eventName);
+                        }
+                        else if(endAction == EndAction.clearItem)
+                        {
+                            //this.currentItem?.destroy();
+                            //this.incrementEvent(eventName);
+                        }
+                        this.currentInteractiveObject = null;
+                        return;
+                    }
+
+                    let text = this.dialog?.getElement('content') as Phaser.GameObjects.Text;
+                    text.text = messages[messagesIndex];
+                    
+                    this.dialog?.layout();
+
+                    return;
+                }
+
+                this.dialog?.scaleDownDestroy(300);
+                this.dialog = null;
+            })
+            .on('button.over', function (button: any, groupName: string, index: number, pointer: Phaser.Input.Pointer, event: Event) 
+            {
+                button.getElement('background').setStrokeStyle(1, 0xffffff);
+            })
+            .on('button.out', function (button: any, groupName: string, index: number, pointer: Phaser.Input.Pointer, event: Event) 
+            {
+                button.getElement('background').setStrokeStyle();
+            });            
+    }
+
 }

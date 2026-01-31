@@ -1,5 +1,6 @@
 import { Types } from "phaser";
 import { ICharacterMovement } from"./ICharacterMovement"
+import { NPC } from "../character/NPC";
 
 export class NopCharacterMovement implements ICharacterMovement
 {
@@ -13,7 +14,7 @@ export class NopCharacterMovement implements ICharacterMovement
         
     }
 
-    setCharacter(_: string, __: Types.Physics.Arcade.SpriteWithDynamicBody): void {
+    setNPC(_: string, __: NPC): void {
         
     }
 
@@ -27,7 +28,7 @@ export class NopCharacterMovement implements ICharacterMovement
 export class RandomInRadiusCharacterMovement implements ICharacterMovement
 {
     private name: string;
-    private character: Types.Physics.Arcade.SpriteWithDynamicBody;
+    private npc: NPC;
     private direction: string = 'down';
 
     private xCenter: number = 0;
@@ -65,7 +66,8 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
     pause(): void 
     {
         this.isPaused = true;
-        this.character.setVelocity(0, 0);
+        this.npc.body.setVelocity(0, 0);
+        this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction, true);
     }
 
     unpause(): void 
@@ -73,37 +75,39 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
         this.isPaused = false;
 
         let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(this.start).normalize().scale(this.velocity);
-        this.character.setVelocity(v.x, v.y);
+        this.npc.body.setVelocity(v.x, v.y);
+
+        this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction, true);
     }
 
-    setCharacter(name: string, character: Types.Physics.Arcade.SpriteWithDynamicBody): void 
+    setNPC(name: string, npc: NPC): void 
     {
         this.name = name;
-        this.character = character;
+        this.npc = npc;
     }
 
     update(delta: number): void 
     {
-        if(!this.character || this.isPaused)
+        if(!this.npc || this.isPaused)
         {
             return;
         }
 
         if(this.isMoving)
         {
-            let currentDistance = this.destination.distance(new Phaser.Math.Vector2(this.character.x, this.character.y));
+            let currentDistance = this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y));
             if(currentDistance > this.lastDistance)
             {
-                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.character.x, this.character.y)).normalize().scale(this.velocity);
-                this.character.setVelocity(v.x, v.y);
+                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
+                this.npc.body.setVelocity(v.x, v.y);
             }
 
-            if(this.destination.distance(new Phaser.Math.Vector2(this.character.x, this.character.y)) <= 5)
+            if(this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)) <= 5)
             {
                 this.isMoving = false;
                 this.waitUntil = Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
-                this.character.setVelocity(0, 0);
-                this.character.play(this.name.toLowerCase() + "_idle_" + this.direction);
+                this.npc.body.setVelocity(0, 0);
+                this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction);
             }
         }
         else 
@@ -142,12 +146,12 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
                     this.direction = "down";
                 }
 
-                this.character.play(this.name.toLowerCase() + "_walk_" + this.direction);
+                this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction);
 
 
-                this.character.setVelocity(v.x, v.y);
+                this.npc.body.setVelocity(v.x, v.y);
 
-                this.lastDistance = this.destination.distance(new Phaser.Math.Vector2(this.character.x, this.character.y));
+                this.lastDistance = this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y));
             }
         }
     }
@@ -165,7 +169,7 @@ export class CharacterMovementConfig
 
 export class WaypointCharacterMovement implements ICharacterMovement
 {
-    private character: Types.Physics.Arcade.SpriteWithDynamicBody;
+    private npc: NPC;
     private name: string;
     private direction: string = 'down';
 
@@ -205,37 +209,49 @@ export class WaypointCharacterMovement implements ICharacterMovement
     
     pause(): void 
     {
+        if(this.npc.destroyed || !this.npc.created)
+        {
+            return;
+        }
+
         this.isPaused = true;
-        this.character.setVelocity(0, 0);
+        this.npc.body.setVelocity(0, 0);
+        this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction, true);
     }
 
     unpause(): void 
     {
+        if(this.npc.destroyed || !this.npc.created)
+        {
+            return;
+        }
+        
         this.isPaused = false;
         let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(this.start).normalize().scale(this.velocity);
-        this.character.setVelocity(v.x, v.y);
+        this.npc.body.setVelocity(v.x, v.y);
+        this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction, true);
     }
 
-    setCharacter(name: string, character: Types.Physics.Arcade.SpriteWithDynamicBody): void 
+    setNPC(name: string, npc: NPC): void 
     {
         this.name = name;
-        this.character = character;
+        this.npc = npc;
     }
 
     update(delta: number): void 
     {
-        if(!this.character || this.isPaused)
+        if(!this.npc || this.isPaused || this.npc.destroyed || !this.npc.created)
         {
             return;
         }
         
         if(this.isMoving)
         {
-            let currentDistance = this.destination.distance(new Phaser.Math.Vector2(this.character.x, this.character.y));
+            let currentDistance = this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y));
             if(currentDistance > this.lastDistance)
             {
-                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.character.x, this.character.y)).normalize().scale(this.velocity);
-                this.character.setVelocity(v.x, v.y);
+                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
+                this.npc.body.setVelocity(v.x, v.y);
             }
 
             if(currentDistance <= 5)
@@ -243,8 +259,8 @@ export class WaypointCharacterMovement implements ICharacterMovement
                 this.isMoving = false;
                 this.waitUntil = Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
                 this.waypointIndex = (this.waypointIndex + 1) % this.waypoints.length;
-                this.character.setVelocity(0, 0);
-                this.character.play(this.name.toLowerCase() + "_idle_" + this.direction);
+                this.npc.body.setVelocity(0, 0);
+                this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction);
 
                 if(this.waypointIndex == 0 && !this.loop)
                 {
@@ -286,11 +302,11 @@ export class WaypointCharacterMovement implements ICharacterMovement
                     this.direction = "down";
                 }
 
-                this.character.play(this.name.toLowerCase() + "_walk_" + this.direction);
+                this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction);
 
-                this.character.setVelocity(v.x, v.y);
+                this.npc.body.setVelocity(v.x, v.y);
 
-                this.lastDistance = this.destination.distance(new Phaser.Math.Vector2(this.character.x, this.character.y));
+                this.lastDistance = this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y));
             }
         }
     }    

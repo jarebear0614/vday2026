@@ -899,6 +899,21 @@
                  "name":"Jared",
                  "properties":[
                         {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"jared"
+                        }, 
+                        {
                          "name":"instance",
                          "type":"string",
                          "value":"jared0"
@@ -909,7 +924,7 @@
                          "value":"{\n  \"type\": \"random\",\n  \"radius\": 5\n}"
                         }],
                  "rotation":0,
-                 "type":"",
+                 "type":"character",
                  "visible":true,
                  "width":0,
                  "x":199.333,

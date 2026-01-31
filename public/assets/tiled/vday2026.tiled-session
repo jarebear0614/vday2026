@@ -148,7 +148,7 @@
         "maps/automapper.tmx"
     ],
     "project": "vday2026.tiled-project",
-    "property.type": "string",
+    "property.type": "int",
     "recentFiles": [
         "maps/automapper.tmx",
         "maps/main.tmx",

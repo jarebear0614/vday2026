@@ -5,6 +5,8 @@ import { GameOver } from './scenes/GameOver';
 import { MainMenu } from './scenes/MainMenu';
 import { Preloader } from './scenes/Preloader';
 
+import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
+
 import { Game, Types } from "phaser";
 
 let requestedHeight = 1024;
@@ -45,6 +47,11 @@ const config: Types.Core.GameConfig = {
                 key: 'animated_tiles',
                 plugin: AnimatedTilesPlugin,
                 mapping: 'animatedTiles'
+            },
+            {
+                key: 'rexUI',
+                plugin: RexUIPlugin,
+                mapping: 'rexUI'
             }
         ]
     }
