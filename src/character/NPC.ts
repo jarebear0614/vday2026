@@ -3,12 +3,14 @@ import { ICharacterMovement } from "../movement/ICharacterMovement";
 import { BaseScene } from "../scenes/BaseScene";
 import { DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, TILE_SCALE } from "../util/const";
 import { Align } from "../util/align";
+import { EndAction } from "../events/dialog";
 
 export class NPCEventConfig
 {
     eventName: string;
     eventKeyTrigger: number;
     eventKeyEnd?: number;
+    onEnd: EndAction = EndAction.nop;
 }
 
 export class NPCOverlapConfig
@@ -61,6 +63,12 @@ export class NPC
 
     private configure()
     {
+        if(this.scene.anims.exists(this.name.toLowerCase() + '_idle_down'))
+        {
+            return;
+        }
+        console.log(this.name);
+
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_idle_down',
             frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 0, end: 3}),
@@ -120,6 +128,7 @@ export class NPC
 
     public create()
     {
+        console.log(this.name);
         this.body = this.scene.physics.add.sprite(this.x * this.scale, this.y * this.scale, this.name.toLowerCase(), 0);
         Align.scaleToGameWidth(this.body, DEFAULT_SPRITE_SCALE, this.scene);
 
@@ -152,6 +161,31 @@ export class NPC
             this.overlapDialogSprite.destroy();
         }
         
+    }
+
+    fadeOut(duration: number, callback?: (onEnd: EndAction) => void)
+    {
+        this.movement?.pause();
+        this.body.play(this.name.toLowerCase() + '_idle_down');
+
+        let fadeOutTween = this.scene.tweens.add({
+            targets: this.body,
+            alpha: { from: 1, to: 0 },
+            ease: 'Linear',
+            duration: duration,
+            repeat: 0,
+            yoyo: false
+        });
+
+        fadeOutTween.onCompleteHandler = () =>
+        {
+            if(callback)
+            {
+                callback(this.eventConfig?.onEnd ?? EndAction.nop);
+            }
+
+            this.scene.tweens.killTweensOf(this.body);
+        };
     }
 
     update(delta: number)

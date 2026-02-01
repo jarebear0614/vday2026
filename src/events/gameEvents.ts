@@ -1,18 +1,60 @@
 import { NPC } from "../character/NPC";
+import { EventEndConfig, NPCEndConfig } from "../util/events";
+import { EventEndAction, NPCEventEndAction } from "./dialog";
 
 export const EVENT_KEY_MAX: number = 1000000;
+
+export class EndEventsConfig
+{
+    onNpcEnd: NPCEventEndAction = NPCEventEndAction.nop;
+    npcEndConfig?: NPCEndConfig;
+    eventEnd: EventEndAction = EventEndAction.nop;
+    eventEndConfig?: EventEndConfig;
+
+    constructor(onNpcEnd: NPCEventEndAction = NPCEventEndAction.nop, npcEndConfig?: NPCEndConfig, eventEnd: EventEndAction = EventEndAction.nop, eventEndConfig?: EventEndConfig)
+    {
+        this.onNpcEnd = onNpcEnd;
+        this.npcEndConfig = npcEndConfig;
+        this.eventEnd = eventEnd;
+        this.eventEndConfig = eventEndConfig;
+    }
+}
+
+export class GameEventDeactivationInformation
+{
+    npcs: NPC[] = [];
+    onNpcEnd: NPCEventEndAction = NPCEventEndAction.nop;
+    npcEndConfig?: NPCEndConfig;
+    eventEndConfig?: EventEndConfig;
+    eventEndAction: EventEndAction;
+    isEventEnding: boolean = false;
+    callback: () => void;
+
+    constructor(isEventEnding: boolean, eventEndAction: EventEndAction, npcs: NPC[], onNpcEnd: NPCEventEndAction, callback: () => void, npcEndConfig?: NPCEndConfig, eventEndConfig?: EventEndConfig)
+    {
+        this.isEventEnding = isEventEnding;
+        this.eventEndAction = eventEndAction;
+        this.npcs = npcs;
+        this.onNpcEnd = onNpcEnd;
+        this.callback = callback;
+        this.npcEndConfig = npcEndConfig;
+        this.eventEndConfig = eventEndConfig;
+    }
+}
 
 export class GameEvent
 {
     name: string;
     key: number = 0;
     npcs: NPC[] = [];    
+    endEventsConfig?: EndEventsConfig;
 
-    constructor(name: string, key: number, characters?: NPC[])
+    constructor(name: string, key: number, characters?: NPC[], endEventsConfig?: EndEventsConfig)
     {
         this.name = name;
         this.key = key;
         this.npcs = characters ?? [];
+        this.endEventsConfig = endEventsConfig;
     }
 
     activate() 
@@ -26,16 +68,31 @@ export class GameEvent
         }
     }
 
-    deactivate()
+    deactivate() : GameEventDeactivationInformation
     {
+        let npcs: NPC[] = [];
+        
         for(let npc of this.npcs)
         {
             //key + 1 because we assume on deactivate we're at the next event
             if(npc.isCreated() && this.key + 1 >= (npc.getEventKeyEnd() ?? EVENT_KEY_MAX))
             {
-                npc.tearDown();
+                npcs.push(npc);
+
+                if(this.endEventsConfig?.onNpcEnd == NPCEventEndAction.nop)
+                {
+                    npc.tearDown();
+                }
             }
         }
+
+        return new GameEventDeactivationInformation(this.key + 1 >= (this.endEventsConfig?.eventEndConfig?.eventEndKey ?? EVENT_KEY_MAX), this.endEventsConfig?.eventEnd ?? EventEndAction.nop, npcs, this.endEventsConfig?.onNpcEnd ?? NPCEventEndAction.nop, () =>
+        {
+            for(let npc of npcs)
+            {
+                npc.tearDown();
+            }
+        }, this.endEventsConfig?.npcEndConfig, this.endEventsConfig?.eventEndConfig);
     }
 
     update(delta: number)
@@ -65,7 +122,7 @@ export class GameEventManager
     gameEvents: GameEvents = {};
     gameEventProgress: GameEventProgress = {};
 
-    addEvent(name: string, eventKey: number, npcs?: NPC[])
+    addEvent(name: string, eventKey: number, npcs?: NPC[], endEventsConfig?: EndEventsConfig)
     {
         if(!this.gameEvents[name])
         {
@@ -95,19 +152,21 @@ export class GameEventManager
         }
         else
         {
-            this.gameEvents[name].push(new GameEvent(name, eventKey, npcs));
+            this.gameEvents[name].push(new GameEvent(name, eventKey, npcs, endEventsConfig));
         }
     }
 
-    incrementEvent(name: string)
+    incrementEvent(name: string) : GameEventDeactivationInformation | undefined
     {
         let currentEvent = this.getCurrentEvent(name);
-        currentEvent?.deactivate();
+        let deactivateInfo = currentEvent?.deactivate();
 
         if(this.gameEventProgress.hasOwnProperty(name))
         {
             this.gameEventProgress[name]++;
         }
+
+        return deactivateInfo;
     }
 
     findEventByNameAndKey(name: string, key: number) : GameEvent | undefined

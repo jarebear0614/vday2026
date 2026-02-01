@@ -6,7 +6,10 @@ export enum EndAction
 
     startScene = "startScene",
 
-    giveLyricPiece = "giveLyricPiece",
+    spawnBirdwingButterfly = "spawnBirdwingButterfly",
+    spawnHairstreakButterfly = "spawnHairstreakButterfly",
+    spawnLunaMothButterfly = "spawnLunaMothButterfly",
+    spawnPerianderButterfly = "spawnPerianderButterfly",
 
     grantItem = "grantItem",
 
@@ -18,7 +21,21 @@ export enum OverlapAction
 {
     nop = "nop",
 
-    autoTrigger = "autoTrigger"
+    autoTrigger = "autoTrigger",
+
+    stop = "stop"
+}
+
+export enum EventEndAction
+{
+    nop = "nop",
+    spawnBirdwingButterfly = "spawnBirdwingButterfly"
+}
+
+export enum NPCEventEndAction
+{
+    nop = "nop",
+    fadeOut = "fadeOut"
 }
 
 export class NPCEventDialog

@@ -15,8 +15,8 @@
         "[123, 124].find((x) =>{ return x == 123; })"
     ],
     "expandedProjectPaths": [
-        ".",
-        "maps"
+        "maps",
+        "."
     ],
     "fileStates": {
         "": {

@@ -40,6 +40,7 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
     private currentWaitTime = 0;
     private waitUntil = 0;
     private waitTimeRange = {min: 500, max: 1500};
+    private waitBetween: number | undefined = undefined;
 
     private isMoving: boolean = false;
     private destination: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
@@ -50,11 +51,12 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
 
     private lastDistance: number = 0;
 
-    constructor(xCenter: number, yCenter: number, radius: number)
+    constructor(xCenter: number, yCenter: number, radius: number, waitBetween?: number)
     {
         this.xCenter = xCenter;
         this.yCenter = yCenter;
         this.radius = radius;
+        this.waitBetween = waitBetween;
 
         this.waitUntil = Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
 
@@ -65,6 +67,11 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
     
     pause(): void 
     {
+        if(this.isPaused)
+        {
+            return;
+        }
+        
         this.isPaused = true;
         this.npc.body.setVelocity(0, 0);
         this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction, true);
@@ -72,6 +79,11 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
 
     unpause(): void 
     {
+        if(!this.isPaused)
+        {
+            return;
+        }
+
         this.isPaused = false;
 
         let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(this.start).normalize().scale(this.velocity);
@@ -105,7 +117,7 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
             if(this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)) <= 5)
             {
                 this.isMoving = false;
-                this.waitUntil = Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
+                this.waitUntil = this.waitBetween ? this.waitBetween : Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
                 this.npc.body.setVelocity(0, 0);
                 this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction);
             }
@@ -157,12 +169,14 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
     }
 }
 
-export class CharacterMovementConfig 
+export class NPCMovementConfig 
 {
     type: string = '';
 
     loop: boolean;
     waypoints: Phaser.Math.Vector2[];
+
+    waitBetween: number | undefined = undefined;
 
     radius: number = 5;
 }
@@ -185,6 +199,7 @@ export class WaypointCharacterMovement implements ICharacterMovement
 
     private currentWaitTime = 0;
     private waitUntil = 0;
+    private waitBetween: number | undefined = undefined;
     private waitTimeRange = {min: 500, max: 1500};
 
     private isMoving: boolean = false;
@@ -195,13 +210,15 @@ export class WaypointCharacterMovement implements ICharacterMovement
 
     private lastDistance: number = 0;
 
-    constructor(xCenter: number, yCenter: number, scale: number, config: CharacterMovementConfig)
+    constructor(xCenter: number, yCenter: number, scale: number, config: NPCMovementConfig)
     {
         this.waypoints = config.waypoints;
         this.loop = config.loop;
         this.scale = scale;
 
         this.destination = this.waypoints[0];
+
+        this.waitBetween = config.waitBetween;
 
         this.start = new Phaser.Math.Vector2(xCenter, yCenter);
         this.destination = new Phaser.Math.Vector2(xCenter, yCenter);
@@ -257,7 +274,7 @@ export class WaypointCharacterMovement implements ICharacterMovement
             if(currentDistance <= 5)
             {
                 this.isMoving = false;
-                this.waitUntil = Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
+                this.waitUntil = this.waitBetween ? this.waitBetween : Math.round(Math.random() * this.waitTimeRange.max - this.waitTimeRange.min) + this.waitTimeRange.min;
                 this.waypointIndex = (this.waypointIndex + 1) % this.waypoints.length;
                 this.npc.body.setVelocity(0, 0);
                 this.npc.body.play(this.name.toLowerCase() + "_idle_" + this.direction);

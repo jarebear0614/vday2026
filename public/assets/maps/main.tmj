@@ -808,24 +808,6 @@
                 }, 
                 {
                  "height":0,
-                 "id":2,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"butterfly_type",
-                         "type":"string",
-                         "value":"birdwing"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":103.5,
-                 "y":363.25
-                }, 
-                {
-                 "height":0,
                  "id":4,
                  "name":"",
                  "point":true,
@@ -894,7 +876,7 @@
          "name":"map_character",
          "objects":[
                 {
-                 "height":0,
+                 "height":16,
                  "id":6,
                  "name":"Jared",
                  "properties":[
@@ -911,7 +893,7 @@
                         {
                          "name":"eventName",
                          "type":"string",
-                         "value":"jared"
+                         "value":"whatsreal"
                         }, 
                         {
                          "name":"instance",
@@ -921,14 +903,125 @@
                         {
                          "name":"movement",
                          "type":"string",
-                         "value":"{\n  \"type\": \"random\",\n  \"radius\": 5\n}"
+                         "value":"{\n  \"type\": \"waypoint\",\n  \"loop\": true,\n  \"waitBetween\": 1000,\n  \"waypoints\": [\n    {\"x\": 14, \"y\": 8},\n    {\"x\": 17, \"y\": 8},\n    {\"x\": 17, \"y\": 11},\n    {\"x\": 14, \"y\": 11}\n  ]\n}"
                         }],
                  "rotation":0,
                  "type":"character",
                  "visible":true,
-                 "width":0,
-                 "x":199.333,
-                 "y":135.333
+                 "width":16,
+                 "x":224,
+                 "y":128
+                }, 
+                {
+                 "height":16,
+                 "id":7,
+                 "name":"Jared-Fake",
+                 "properties":[
+                        {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"whatsreal"
+                        }, 
+                        {
+                         "name":"instance",
+                         "type":"string",
+                         "value":"jaredfake0"
+                        }, 
+                        {
+                         "name":"movement",
+                         "type":"string",
+                         "value":"{\n  \"type\": \"waypoint\",\n  \"loop\": true,\n  \"waitBetween\": 1000,\n  \"waypoints\": [\n    {\"x\": 17, \"y\": 8},\n    {\"x\": 17, \"y\": 11},\n    {\"x\": 14, \"y\": 11},\n    {\"x\": 14, \"y\": 8}\n  ]\n}"
+                        }],
+                 "rotation":0,
+                 "type":"character",
+                 "visible":true,
+                 "width":16,
+                 "x":272,
+                 "y":128
+                }, 
+                {
+                 "height":16,
+                 "id":8,
+                 "name":"Jared-Fake",
+                 "properties":[
+                        {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"whatsreal"
+                        }, 
+                        {
+                         "name":"instance",
+                         "type":"string",
+                         "value":"jaredfake1"
+                        }, 
+                        {
+                         "name":"movement",
+                         "type":"string",
+                         "value":"{\n  \"type\": \"waypoint\",\n  \"loop\": true,\n  \"waitBetween\": 1000,\n  \"waypoints\": [\n    {\"x\": 17, \"y\": 11},\n    {\"x\": 14, \"y\": 11},\n    {\"x\": 14, \"y\": 8},\n    {\"x\": 17, \"y\": 8}\n  ]\n}"
+                        }],
+                 "rotation":0,
+                 "type":"character",
+                 "visible":true,
+                 "width":16,
+                 "x":272,
+                 "y":176
+                }, 
+                {
+                 "height":16,
+                 "id":9,
+                 "name":"Jared-Fake",
+                 "properties":[
+                        {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"whatsreal"
+                        }, 
+                        {
+                         "name":"instance",
+                         "type":"string",
+                         "value":"jaredfake2"
+                        }, 
+                        {
+                         "name":"movement",
+                         "type":"string",
+                         "value":"{\n  \"type\": \"waypoint\",\n  \"loop\": true,\n  \"waitBetween\": 1000,\n  \"waypoints\": [\n    {\"x\": 14, \"y\": 11},\n    {\"x\": 14, \"y\": 8},\n    {\"x\": 17, \"y\": 8},\n    {\"x\": 17, \"y\": 11}\n  ]\n}"
+                        }],
+                 "rotation":0,
+                 "type":"character",
+                 "visible":true,
+                 "width":16,
+                 "x":224,
+                 "y":176
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -937,7 +1030,7 @@
          "y":0
         }],
  "nextlayerid":16,
- "nextobjectid":7,
+ "nextobjectid":10,
  "orientation":"orthogonal",
  "renderorder":"left-down",
  "tiledversion":"1.11.2",

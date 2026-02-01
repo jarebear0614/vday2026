@@ -3,14 +3,14 @@ import { Align } from '../util/align';
 import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DEFAULT_BUTTERFLY_SPRITE_FRAMERATE, DEFAULT_CATCH_SPRITE_FRAMERATE, DEFAULT_EFFECT_FRAMERATE, DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, HAIRSTREAK_BUTTERFLY_NAME, LUNAMOTH_BUTTERFLY_NAME, PERIANDER_BUTTERFLY_NAME, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
 import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
-import { CharacterMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
+import { NPCMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
 import { NPC, NPCEventConfig } from '../character/NPC';
 import { ICharacterMovement } from '../movement/ICharacterMovement';
 
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 import { Interactive, InteractiveConfig, InteractiveTriggerConfig } from '../events/interactive';
 import { EVENT_KEY_MAX, GameEventManager } from '../events/gameEvents';
-import { EndAction, NPCEventUtility, OverlapAction } from '../events/dialog';
+import { EndAction, EventEndAction, NPCEventEndAction, NPCEventUtility, OverlapAction } from '../events/dialog';
 import { npcEvents } from '../util/events';
 
 export class Game extends BaseScene
@@ -135,6 +135,8 @@ export class Game extends BaseScene
 
         this.load.spritesheet('jared_idle', 'assets/jared/Jared-Idle.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('jared_walk', 'assets/jared/Jared-Walk.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('jared-fake_idle', 'assets/jared/Jared-Fake-Idle.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('jared-fake_walk', 'assets/jared/Jared-Fake-Walk.png', {frameWidth: 32, frameHeight: 32});
 
         this.load.spritesheet('birdwing_butterfly_icon', 'assets/sprites/butterflies/icons/Birdwing Butterfly.png', {frameWidth: 16, frameHeight: 16});
         this.load.spritesheet('hairstreak_butterfly_icon', 'assets/sprites/butterflies/icons/Hairstreak Butterfly.png', {frameWidth: 16, frameHeight: 16});
@@ -517,7 +519,7 @@ export class Game extends BaseScene
             const {x, y, name, properties, type } = character;
 
             let instance: string = '';
-            let movement: CharacterMovementConfig = new CharacterMovementConfig();
+            let movement: NPCMovementConfig = new NPCMovementConfig();
             let eventKeyTrigger: number = 0;
             let eventKeyEnd: number | undefined = undefined;
             let eventName: string = "";
@@ -543,7 +545,8 @@ export class Game extends BaseScene
                 }
             }
 
-            let dialog = npcEvents[eventName].npc.find((f) => { return f.instance == instance; });
+            let ev = npcEvents[eventName];
+            let dialog = ev.npc.find((f) => { return f.instance == instance; });
 
             let npcEventConfig: NPCEventConfig = new NPCEventConfig();
             if(eventName !== "")
@@ -551,6 +554,7 @@ export class Game extends BaseScene
                 npcEventConfig.eventName = eventName;
                 npcEventConfig.eventKeyTrigger = eventKeyTrigger
                 npcEventConfig.eventKeyEnd = eventKeyEnd;
+                npcEventConfig.onEnd = dialog ? dialog.events[dialog.events.length - 1].onEnd : EndAction.nop;
             }
 
             let possibleExistingNPC = localNpcs.find((c) =>
@@ -571,13 +575,17 @@ export class Game extends BaseScene
                                             player: this.megan,
                                             overlapCallback: () =>
                                             {   
-                                                newNPC.movement?.pause();
                                                 let ev = this.gameEventManager.getCurrentEventProgress(eventName);
                                                 if(ev !== undefined)
                                                 {
                                                     let messages = NPCEventUtility.findEventByKey(dialog!, ev);
                                                     if(messages !== undefined)
                                                     {
+                                                        if(messages.overlapAction == OverlapAction.stop)
+                                                        {
+                                                            newNPC.movement?.pause();
+                                                        }
+
                                                         if(ev >= eventKeyTrigger)
                                                         {
                                                             this.currentInteractiveObject = new Interactive(messages.dialog, type, eventName, eventKeyTrigger, {
@@ -598,7 +606,7 @@ export class Game extends BaseScene
                                                                     type: this.currentInteractiveObject?.type ?? 'sign',
                                                                     interactive: this.currentInteractiveObject,
                                                                     scene: undefined
-                                                                });
+                                                                }, newNPC);
                                                             }
                                                         }
                                                     }
@@ -613,25 +621,35 @@ export class Game extends BaseScene
 
             for(let d of dialog?.events ?? [])
             {
-                this.gameEventManager.addEvent(eventName, d.eventKey, [newNPC]);                     
+                this.gameEventManager.addEvent(eventName, d.eventKey, [newNPC], {
+                    onNpcEnd: ev.npcOnEnd,
+                    npcEndConfig: ev.npcOnEndConfig,
+                    eventEnd: ev.eventOnEnd,
+                    eventEndConfig: ev.eventEndConfig
+                });                     
 
                 for(let npc of localNpcs)
                 {
                     if(npc.eventConfig?.eventName == eventName && (npc.getEventKeyEnd() ?? EVENT_KEY_MAX) < (eventKeyEnd ?? EVENT_KEY_MAX))
                     {
-                        this.gameEventManager.addEvent(eventName, d.eventKey, [npc]);
+                        this.gameEventManager.addEvent(eventName, d.eventKey, [npc], {
+                            onNpcEnd: ev.npcOnEnd,
+                            npcEndConfig: ev.npcOnEndConfig,
+                            eventEnd: ev.eventOnEnd,
+                            eventEndConfig: ev.eventEndConfig
+                        });
                     }
                 }
             }
         }
     }
 
-    private getMovementFromConfig(x: number, y: number, config: CharacterMovementConfig): ICharacterMovement
+    private getMovementFromConfig(x: number, y: number, config: NPCMovementConfig): ICharacterMovement
     {
         switch(config.type)
         {
             case "random":
-                return new RandomInRadiusCharacterMovement(x, y, 16 * this.tilemapScale * config.radius);
+                return new RandomInRadiusCharacterMovement(x, y, 16 * this.tilemapScale * config.radius, config.waitBetween);
             case "waypoint":
                 return new WaypointCharacterMovement(x, y, this.tilemapScale, config);
             default:
@@ -650,69 +668,85 @@ export class Game extends BaseScene
             switch(butterfly.properties[0].value)
             {
                 case 'birdwing':
-                    this.birdwingButterfly = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, 'birdwing_butterfly', 0).setName(BIRDWING_BUTTERFLY_NAME);
-                    Align.scaleToGameWidth( this.birdwingButterfly, DEFAULT_BUTTERFLY_SCALE, this);
-
-                    this.anims.create({
-                        key: 'birdwing_butterfly_flap',
-                        frames: this.anims.generateFrameNumbers('birdwing_butterfly', {start: 0, end: 6}),
-                        frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
-                        repeat: -1
-                    });
-
-                    this.birdwingButterfly.play('birdwing_butterfly_flap');
-
-                    this.butterflies.push(this.birdwingButterfly);
+                    this.spawnBirdwingButterfly(x! * this.tilemapScale, y! * this.tilemapScale);
                     break;
                 case 'hairstreak':
-                    this.hairstreakButterfly = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, 'hairstreak_butterfly', 0).setName(HAIRSTREAK_BUTTERFLY_NAME);
-                    Align.scaleToGameWidth( this.hairstreakButterfly, DEFAULT_BUTTERFLY_SCALE, this);
-
-                    this.anims.create({
-                        key: 'hairstreak_butterfly_flap',
-                        frames: this.anims.generateFrameNumbers('hairstreak_butterfly', {start: 0, end: 6}),
-                        frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
-                        repeat: -1
-                    });
-
-                    this.hairstreakButterfly.play('hairstreak_butterfly_flap');
-
-                    this.butterflies.push(this.hairstreakButterfly);
+                    this.spawnHairstreakButterfly(x! * this.tilemapScale, y! * this.tilemapScale);
                     break;
                 case 'lunamoth':
-                    this.lunaMothButterfly = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, 'lunamoth_butterfly', 0).setName(LUNAMOTH_BUTTERFLY_NAME);
-                    Align.scaleToGameWidth( this.lunaMothButterfly, DEFAULT_BUTTERFLY_SCALE, this);
-
-                    this.anims.create({
-                        key: 'lunamoth_butterfly_flap',
-                        frames: this.anims.generateFrameNumbers('lunamoth_butterfly', {start: 0, end: 6}),
-                        frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
-                        repeat: -1
-                    });
-
-                    this.lunaMothButterfly.play('lunamoth_butterfly_flap');
-
-                    this.butterflies.push(this.lunaMothButterfly);
+                    this.spawnLunaMothButterfly(x! * this.tilemapScale, y! * this.tilemapScale);
                     break;
                 case 'periander':
-                    this.perianderMetalmarkButterfly = this.physics.add.sprite(x! * this.tilemapScale, y! * this.tilemapScale, 'periander_metalmark_butterfly', 0).setName(PERIANDER_BUTTERFLY_NAME);
-                    Align.scaleToGameWidth( this.perianderMetalmarkButterfly, DEFAULT_BUTTERFLY_SCALE, this);
-
-                    this.anims.create({
-                        key: 'periander_butterfly_flap',
-                        frames: this.anims.generateFrameNumbers('periander_metalmark_butterfly', {start: 0, end: 6}),
-                        frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
-                        repeat: -1
-                    });
-
-                    this.perianderMetalmarkButterfly.play('periander_butterfly_flap');
-
-                    this.butterflies.push(this.perianderMetalmarkButterfly);
+                    this.spawnPerianderButterfly(x! * this.tilemapScale, y! * this.tilemapScale);
                     break;
             }
         }
     }
+
+    private spawnBirdwingButterfly(x: number, y: number) {
+        this.birdwingButterfly = this.physics.add.sprite(x, y, 'birdwing_butterfly', 0).setName(BIRDWING_BUTTERFLY_NAME);
+        Align.scaleToGameWidth(this.birdwingButterfly, DEFAULT_BUTTERFLY_SCALE, this);
+
+        this.anims.create({
+            key: 'birdwing_butterfly_flap',
+            frames: this.anims.generateFrameNumbers('birdwing_butterfly', { start: 0, end: 6 }),
+            frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.birdwingButterfly.play('birdwing_butterfly_flap');
+
+        this.butterflies.push(this.birdwingButterfly);
+    }
+
+    private spawnHairstreakButterfly(x: number, y: number) {
+        this.hairstreakButterfly = this.physics.add.sprite(x, y, 'hairstreak_butterfly', 0).setName(HAIRSTREAK_BUTTERFLY_NAME);
+        Align.scaleToGameWidth(this.hairstreakButterfly, DEFAULT_BUTTERFLY_SCALE, this);
+
+        this.anims.create({
+            key: 'hairstreak_butterfly_flap',
+            frames: this.anims.generateFrameNumbers('hairstreak_butterfly', { start: 0, end: 6 }),
+            frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.hairstreakButterfly.play('hairstreak_butterfly_flap');
+
+        this.butterflies.push(this.hairstreakButterfly);
+    }
+
+    private spawnLunaMothButterfly(x: number, y: number) {
+        this.lunaMothButterfly = this.physics.add.sprite(x, y, 'lunamoth_butterfly', 0).setName(LUNAMOTH_BUTTERFLY_NAME);
+        Align.scaleToGameWidth(this.lunaMothButterfly, DEFAULT_BUTTERFLY_SCALE, this);
+
+        this.anims.create({
+            key: 'lunamoth_butterfly_flap',
+            frames: this.anims.generateFrameNumbers('lunamoth_butterfly', { start: 0, end: 6 }),
+            frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.lunaMothButterfly.play('lunamoth_butterfly_flap');
+
+        this.butterflies.push(this.lunaMothButterfly);
+    }
     
+    private spawnPerianderButterfly(x: number, y: number) {
+        this.perianderMetalmarkButterfly = this.physics.add.sprite(x, y, 'periander_metalmark_butterfly', 0).setName(PERIANDER_BUTTERFLY_NAME);
+        Align.scaleToGameWidth(this.perianderMetalmarkButterfly, DEFAULT_BUTTERFLY_SCALE, this);
+
+        this.anims.create({
+            key: 'periander_butterfly_flap',
+            frames: this.anims.generateFrameNumbers('periander_metalmark_butterfly', { start: 0, end: 6 }),
+            frameRate: DEFAULT_BUTTERFLY_SPRITE_FRAMERATE,
+            repeat: -1
+        });
+
+        this.perianderMetalmarkButterfly.play('periander_butterfly_flap');
+
+        this.butterflies.push(this.perianderMetalmarkButterfly);
+    }
+
     configureUI() 
     {
         this.birdwingButterflyIcon = this.add.sprite(0, 0, 'birdwing_butterfly_icon', 3).setScrollFactor(0);
@@ -800,13 +834,6 @@ export class Game extends BaseScene
             if(!this.isUpDown && !this.isDownDown && !this.isRightDown && !this.isLeftDown)
             {
                 this.megan.play('megan_idle_' + this.meganDirection, true);
-
-                // this.megan.on(Animations.Events.ANIMATION_UPDATE, (a:Animations.Animation, b:Animations.AnimationFrame, c:GameObjects.Sprite, frameKey: string) => {
-                //     if(a.key == "megan_idle_down")
-                //     {
-                //         console.log(a, b.index, c, frameKey);
-                //     }
-                // });
             }
 
             if( (!this.isUpDown && this.isPreviousUpDown) ||
@@ -824,16 +851,20 @@ export class Game extends BaseScene
 
             if(!this.isPreviousInteractKeyDown && this.isInteractKeyDown)
             {
-                // this.megan.play('megan_catching_' + this.meganDirection, true);
-                // this.isCatching = true;
-                // this.megan.setVelocity(0, 0);
-                //console.log(this.map.getTileAtWorldXY(this.megan.x, this.megan.y, true, this.camera));
-                console.log('here');
-                this.triggerInteractiveEvent({
-                    type: this.currentInteractiveObject?.type ?? 'sign',
-                    interactive: this.currentInteractiveObject,
-                    scene: this.currentInteractiveObject?.sceneTransition
-                });
+                if(this.currentInteractiveObject)
+                {
+                    this.triggerInteractiveEvent({
+                        type: this.currentInteractiveObject?.type ?? 'sign',
+                        interactive: this.currentInteractiveObject,
+                        scene: this.currentInteractiveObject?.sceneTransition
+                    }, this.currentInteractiveObject.sourceCharacter);
+                }
+                else
+                {
+                    this.megan.play('megan_catching_' + this.meganDirection, true);
+                    this.isCatching = true;
+                    this.megan.setVelocity(0, 0);
+                }
             }
 
             this.wasPlayerTouching = this.playerTouching;
@@ -868,13 +899,22 @@ export class Game extends BaseScene
             npc.update(delta);
         }
 
-        // if(this.megan.x + vel.x > this.xLimit || 
-        //    this.megan.x + vel.x < 0 || 
-        //    this.megan.y + vel.y > this.yLimit || 
-        //    this.megan.y + vel.y < 0)
-        // {
-        //     this.megan.setVelocity(0, 0);
-        // }
+        if(this.megan.x < 0)
+        {
+            this.megan.x = 0;
+        }
+        if(this.megan.y < 0)
+        {
+            this.megan.y = 0;
+        }
+        if(this.megan.x > this.xLimit)
+        {
+            this.megan.x = this.xLimit;
+        }
+        if(this.megan.y > this.yLimit)
+        {
+            this.megan.y = this.yLimit;
+        }
     }
 
     updateButterflies(time: number)
@@ -902,12 +942,46 @@ export class Game extends BaseScene
     {
         if(name)
         {
-            this.gameEventManager.incrementEvent(name);      
+            let deactivateInfo = this.gameEventManager.incrementEvent(name);
+
+            let activation = 0;
+            let callback = (onEnd: EndAction) =>
+            {
+                activation++;
+                if(activation == deactivateInfo?.npcs.length)
+                {
+                    deactivateInfo.callback();
+                    
+                    if(deactivateInfo?.isEventEnding)
+                    {
+                        switch(deactivateInfo.eventEndAction)
+                        {
+                            case EventEndAction.spawnBirdwingButterfly:
+                                let instance = deactivateInfo.eventEndConfig?.spawnLocationNPCInstance;
+                                let npc = deactivateInfo.npcs.find((f) => f.instance == instance);
+                                if(npc)
+                                {
+                                    this.spawnBirdwingButterfly(npc.body.x, npc.body.y);
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+            
+            if(deactivateInfo && deactivateInfo.onNpcEnd == NPCEventEndAction.fadeOut)
+            {
+                for(let npc of deactivateInfo.npcs)
+                {
+                    npc.fadeOut(deactivateInfo.npcEndConfig?.fadeDuration ?? 400, callback);
+                }
+            }
+
             this.configureEvent();
         }
     }
 
-    private triggerInteractiveEvent(config: InteractiveTriggerConfig) 
+    private triggerInteractiveEvent(config: InteractiveTriggerConfig, sourceNPC?: NPC) 
     {
         if(!config)
         {
@@ -920,7 +994,7 @@ export class Game extends BaseScene
                 case "character":
                     if(config.interactive)
                     {
-                        this.showDialog(config.interactive.messages, {
+                        this.showDialog(config.interactive.messages, sourceNPC, {
                             title: config.interactive.title,
                             endAction: config.interactive.endAction,
                             sourceCharacter: config.interactive.sourceCharacter,
@@ -953,7 +1027,7 @@ export class Game extends BaseScene
         }
     }
 
-    private showDialog(messages: string[], config?: InteractiveConfig)
+    private showDialog(messages: string[], sourceNPC?: NPC, config?: InteractiveConfig)
     {             
         if(this.dialog != null) 
         {
@@ -1054,23 +1128,8 @@ export class Game extends BaseScene
                         let endAction = config?.endAction ?? this.currentInteractiveObject?.endAction ?? EndAction.nop;
                         let eventName = config?.eventName ?? this.currentInteractiveObject?.eventName ?? undefined;
 
-                        if(endAction == EndAction.incrementEvent) 
-                        {
-                            this.incrementEvent(eventName);
-                        }
-                        else if(endAction == EndAction.startScene && this.currentInteractiveObject && this.currentInteractiveObject.sceneTransition)
-                        {
-                            //this.triggerSceneFromConfig(this.currentInteractiveObject.sceneTransition);
-                        }
-                        else if(endAction == EndAction.grantItem && config?.grantedItem)
-                        {
-                            //this.grantItem(config.grantedItem, eventName);
-                        }
-                        else if(endAction == EndAction.clearItem)
-                        {
-                            //this.currentItem?.destroy();
-                            //this.incrementEvent(eventName);
-                        }
+                        this.handleEndAction(endAction, eventName, config, sourceNPC);
+
                         this.currentInteractiveObject = null;
                         return;
                     }
@@ -1096,4 +1155,37 @@ export class Game extends BaseScene
             });            
     }
 
+
+    private handleEndAction(endAction: EndAction, eventName: string | undefined, config: InteractiveConfig | undefined, sourceNPC: NPC | undefined) 
+    {
+        if (endAction == EndAction.incrementEvent) 
+        {
+            this.incrementEvent(eventName);
+        }
+        else if (endAction == EndAction.grantItem && config?.grantedItem) 
+        {
+            //this.grantItem(config.grantedItem, eventName);
+        }
+        else if (endAction == EndAction.clearItem) 
+        {
+            //this.currentItem?.destroy();
+            //this.incrementEvent(eventName);
+        }
+        else if (endAction == EndAction.spawnBirdwingButterfly && sourceNPC) 
+        {
+            this.incrementEvent(eventName);
+        }
+        else if (endAction == EndAction.spawnHairstreakButterfly && sourceNPC) 
+        {
+            this.incrementEvent(eventName);
+        }
+        else if (endAction == EndAction.spawnLunaMothButterfly && sourceNPC) 
+        {
+            this.incrementEvent(eventName);
+        }
+        else if (endAction == EndAction.spawnPerianderButterfly && sourceNPC) 
+        {
+            this.incrementEvent(eventName);
+        }
+    }
 }
