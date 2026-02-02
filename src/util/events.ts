@@ -9,6 +9,9 @@ export class EventEndConfig
 {
     eventEndKey: number;
     spawnLocationNPCInstance?: string;
+
+
+    tilesToRemove?: {layerName: string, coordinates: {x: number, y: number}[] }[];
 }
 
 export class NPCEventData
@@ -43,7 +46,7 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                             eventKey: 0,
                             dialog: [
                                 "Hiya Love",
-                                "You found me"
+                                "I knew you'd know the real me."
                             ],
                             onEnd: EndAction.incrementEvent,
                             overlapAction: OverlapAction.nop
@@ -90,5 +93,35 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                     ]
                 }
             ]
+    },
+    "maze": 
+    {
+        npcOnEnd: NPCEventEndAction.fadeOut,
+        npcOnEndConfig: 
+        {
+            fadeDuration: 2000,
+        },
+        eventOnEnd: EventEndAction.spawnLunaMothButterfly | EventEndAction.removeTiles,
+        eventEndConfig: 
+        {
+            eventEndKey: 1,
+            spawnLocationNPCInstance: 'jaredmaze',
+            tilesToRemove: [{layerName: 'colliders', coordinates: [{x: 42, y: 2}, {x: 43, y: 2}, {x: 44, y: 2}, {x: 42, y: 3}, {x: 43, y: 3}, {x: 44, y: 3}]}]
+        },
+        npc: [
+            {
+                    instance: 'jaredmaze',
+                    events: [
+                        {
+                            eventKey: 0,
+                            dialog: [
+                                "You made it through the maze! Now let's just go behind this bush..."
+                            ],
+                            onEnd: EndAction.incrementEvent,
+                            overlapAction: OverlapAction.nop
+                        }
+                    ]
+            },
+        ]
     }
 };

@@ -28,8 +28,12 @@ export enum OverlapAction
 
 export enum EventEndAction
 {
-    nop = "nop",
-    spawnBirdwingButterfly = "spawnBirdwingButterfly"
+    nop = 0,
+    spawnBirdwingButterfly = 1,
+    spawnHairstreakButterfly = 2,
+    spawnLunaMothButterfly = 4,
+    spawnPerianderButterfly = 8,
+    removeTiles = 16
 }
 
 export enum NPCEventEndAction

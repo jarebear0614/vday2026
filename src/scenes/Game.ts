@@ -80,6 +80,7 @@ export class Game extends BaseScene
     deepForestTrees: Tilemaps.Tileset;
 
     collidersLayer: Tilemaps.TilemapLayer;
+    end_maze_layer: Tilemaps.TilemapLayer;
     above1Layer: Tilemaps.TilemapLayer;
     above2Layer: Tilemaps.TilemapLayer;
     above3Layer: Tilemaps.TilemapLayer;
@@ -199,13 +200,13 @@ export class Game extends BaseScene
         this.configureCharacterObjects();
         this.configureButterflies();
         this.configureUI();
-        this.configureMusic();
-
-        
+        this.configureMusic();        
         this.configureEvent();
 
         this.animatedTiles.init(this.map);
         this.animatedTiles.setRate(0.5);
+
+        //this.map.layers.find((l) => { return l.name == "colliders"})?.tilemapLayer.getTileAt().
     }
 
     configureSceneEvents() 
@@ -477,6 +478,7 @@ export class Game extends BaseScene
         backgroundLayerDecoration?.setScale(this.tilemapScale, this.tilemapScale);
 
         this.collidersLayer = this.map.createLayer('colliders', this.tilesets)!;
+
         this.before1Layer = this.map.createLayer('before_1', this.tilesets)!;
         this.before2Layer = this.map.createLayer('before_2', this.tilesets)!;
         this.before3Layer = this.map.createLayer('before_3', this.tilesets)!;
@@ -507,6 +509,7 @@ export class Game extends BaseScene
 
         this.physics.add.collider(this.megan, this.collidersLayer);
         this.collidersLayer.setCollisionByExclusion([-1], true);
+        
     }
 
     configureCharacterObjects()
@@ -954,16 +957,54 @@ export class Game extends BaseScene
                     
                     if(deactivateInfo?.isEventEnding)
                     {
-                        switch(deactivateInfo.eventEndAction)
+                        let instance = deactivateInfo.eventEndConfig?.spawnLocationNPCInstance;
+                        let npc = deactivateInfo.npcs.find((f) => f.instance == instance);
+                        console.log(deactivateInfo);
+                        if((deactivateInfo.eventEndAction & EventEndAction.spawnBirdwingButterfly) == EventEndAction.spawnBirdwingButterfly)
                         {
-                            case EventEndAction.spawnBirdwingButterfly:
-                                let instance = deactivateInfo.eventEndConfig?.spawnLocationNPCInstance;
-                                let npc = deactivateInfo.npcs.find((f) => f.instance == instance);
-                                if(npc)
+                            console.log('birdwing');
+                            if(npc)
+                            {
+                                console.log('spawning');
+                                this.spawnBirdwingButterfly(npc.body.x, npc.body.y);
+                            }
+                        }
+                        if((deactivateInfo.eventEndAction & EventEndAction.spawnHairstreakButterfly) == EventEndAction.spawnHairstreakButterfly)
+                        {
+                            if(npc)
+                            {
+                                this.spawnHairstreakButterfly(npc.body.x, npc.body.y);
+                            } 
+                        }
+                        if((deactivateInfo.eventEndAction & EventEndAction.spawnLunaMothButterfly) == EventEndAction.spawnLunaMothButterfly)
+                        {
+                            if(npc)
+                            {
+                                this.spawnLunaMothButterfly(npc.body.x, npc.body.y);
+                            }
+                        }
+                        if((deactivateInfo.eventEndAction & EventEndAction.spawnPerianderButterfly) == EventEndAction.spawnPerianderButterfly)
+                        {
+                            if(npc)
+                            {
+                                this.spawnPerianderButterfly(npc.body.x, npc.body.y);
+                            }
+                        }
+                        if((deactivateInfo.eventEndAction & EventEndAction.removeTiles) == EventEndAction.removeTiles)
+                        {
+                            let tiles = deactivateInfo.eventEndConfig?.tilesToRemove;
+                            if(tiles && tiles.length > 0)
+                            {
+                                for(let layer of tiles)
                                 {
-                                    this.spawnBirdwingButterfly(npc.body.x, npc.body.y);
+                                    let tilemapLayer = this.map.getLayer(layer.layerName);
+
+                                    for(let tileLocation of layer.coordinates)
+                                    {
+                                        tilemapLayer?.tilemapLayer.removeTileAt(tileLocation.x, tileLocation.y, true, true);
+                                    }
                                 }
-                                break;
+                            }
                         }
                     }
                 }

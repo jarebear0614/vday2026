@@ -8,7 +8,7 @@ export const DEFAULT_CATCH_SPRITE_FRAMERATE = 10; //frames per second
 export const DEFAULT_BUTTERFLY_SPRITE_FRAMERATE = 6;
 
 export const TILE_SIZE: number = 16;
-export const TILE_SCALE: number = 0.12;
+export const TILE_SCALE: number = 0.08;
 
 export const CATCHING_DISTANCE = 8;
 export const CATCHING_SIZE = 8;
