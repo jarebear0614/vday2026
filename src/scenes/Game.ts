@@ -213,6 +213,21 @@ export class Game extends BaseScene
         this.animatedTiles.init(this.map);
         this.animatedTiles.setRate(0.5);
 
+        if(this.gameState.fromScene === "Constellations")
+        {
+            console.log(this.gameEventManager.getCurrentEventProgress("constellations"));
+            if(this.gameEventManager.getCurrentEventProgress("constellations") === 0 && this.gameState.completedConstellations)
+            {
+                this.gameEventManager.incrementEvent("constellations");
+
+                let dialog = npcEvents['constellations'].npc[0].events[npcEvents['constellations'].npc[0].events.length - 1].dialog;
+                this.showDialog(dialog, undefined,
+                {
+                    endAction: EndAction.incrementEvent
+                });
+            }
+        }
+
         //this.map.layers.find((l) => { return l.name == "colliders"})?.tilemapLayer.getTileAt().
     }
 
@@ -225,6 +240,11 @@ export class Game extends BaseScene
     {
         this.megan = this.physics.add.sprite(100, 100, 'megan', 0).setSize(TILE_SIZE, TILE_SIZE).setOrigin(0, 0).setGravity(0, 0);
         Align.scaleToGameWidth(this.megan, DEFAULT_SPRITE_SCALE, this);
+
+        let playerXSpawn = TILE_SIZE * this.tilemapScale * (this.gameState.spawnX ?? 20);
+        let playerYSpawn = TILE_SIZE * this.tilemapScale * (this.gameState.spawnY ?? 31);
+
+        this.megan.setPosition(playerXSpawn, playerYSpawn);
 
         this.anims.create({
             key: 'megan_idle_down',

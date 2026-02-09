@@ -2,9 +2,9 @@ export class GameState
 {
     tilemap?: string = "meganshouse";
 
-    spawnX?: number = 12;
+    spawnX?: number = 21;
 
-    spawnY?: number = 5;
+    spawnY?: number = 36;
 
     completedConstellations: boolean = false;
 

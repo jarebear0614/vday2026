@@ -5434,12 +5434,6 @@
 </data>
  </layer>
  <objectgroup id="15" name="map_butterflies">
-  <object id="1" x="48" y="368">
-   <properties>
-    <property name="butterfly_type" value="hairstreak"/>
-   </properties>
-   <point/>
-  </object>
   <object id="5" x="62.75" y="310.75">
    <properties>
     <property name="butterfly_type" value="periander"/>

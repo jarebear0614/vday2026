@@ -790,24 +790,6 @@
          "objects":[
                 {
                  "height":0,
-                 "id":1,
-                 "name":"",
-                 "point":true,
-                 "properties":[
-                        {
-                         "name":"butterfly_type",
-                         "type":"string",
-                         "value":"hairstreak"
-                        }],
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":48,
-                 "y":368
-                }, 
-                {
-                 "height":0,
                  "id":5,
                  "name":"",
                  "point":true,
@@ -1076,8 +1058,8 @@
                  "type":"character",
                  "visible":true,
                  "width":16,
-                 "x":111.333333333333,
-                 "y":81.3333333333333
+                 "x":111.333,
+                 "y":81.3333
                 }],
          "opacity":1,
          "type":"objectgroup",

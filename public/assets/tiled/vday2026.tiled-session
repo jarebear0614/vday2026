@@ -46,8 +46,8 @@
             "scale": 1.5,
             "selectedLayer": 5,
             "viewCenter": {
-                "x": 480.33333333333337,
-                "y": 160
+                "x": 480,
+                "y": 159.66666666666663
             }
         },
         "maps/automapper.tmx#Birch Tree Extruded": {
@@ -78,10 +78,10 @@
         },
         "maps/main.tmx": {
             "scale": 1.5,
-            "selectedLayer": 14,
+            "selectedLayer": 11,
             "viewCenter": {
-                "x": 480.33333333333337,
-                "y": 480
+                "x": 280.33333333333337,
+                "y": 476.66666666666663
             }
         },
         "maps/main.tmx#Big Tree Extruded": {

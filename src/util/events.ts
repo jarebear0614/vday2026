@@ -131,7 +131,7 @@ export const npcEvents: { [key: string]: NPCEventData; } =
         {
             fadeDuration: 2000,
         },
-        eventOnEnd: EventEndAction.spawnLunaMothButterfly,
+        eventOnEnd: EventEndAction.spawnHairstreakButterfly,
         eventEndConfig: 
         {
             eventEndKey: 2,
