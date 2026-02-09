@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="16">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="19">
  <editorsettings>
   <export target="../../maps/main.tmj" format="json"/>
  </editorsettings>
@@ -4844,9 +4844,9 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,4811,4812,4812,4812,4812,4812,4812,4812,4812,4813,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
-0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,0,0,0,4811,4812,4812,4812,4812,4812,4812,4812,4812,4813,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -5537,6 +5537,39 @@
     <property name="eventKeyTrigger" type="int" value="0"/>
     <property name="eventName" value="constellations"/>
     <property name="instance" value="jaredconstellations"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;nop&quot;
+}</property>
+   </properties>
+  </object>
+  <object id="16" name="Onyx" type="character" x="80" y="784" width="16" height="16">
+   <properties>
+    <property name="eventKeyEnd" type="int" value="2"/>
+    <property name="eventKeyTrigger" type="int" value="0"/>
+    <property name="eventName" value="cats"/>
+    <property name="instance" value="onyx0"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;nop&quot;
+}</property>
+   </properties>
+  </object>
+  <object id="17" name="Reese" type="character" x="80" y="816" width="16" height="16">
+   <properties>
+    <property name="eventKeyEnd" type="int" value="2"/>
+    <property name="eventKeyTrigger" type="int" value="0"/>
+    <property name="eventName" value="cats"/>
+    <property name="instance" value="reese0"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;nop&quot;
+}</property>
+   </properties>
+  </object>
+  <object id="18" name="Jared" type="character" x="31.6667" y="736.333" width="16" height="16">
+   <properties>
+    <property name="eventKeyEnd" type="int" value="2"/>
+    <property name="eventKeyTrigger" type="int" value="0"/>
+    <property name="eventName" value="cats"/>
+    <property name="instance" value="jaredcats"/>
     <property name="movement">{
   &quot;type&quot;: &quot;nop&quot;
 }</property>

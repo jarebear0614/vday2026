@@ -163,5 +163,103 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                 ]
             },
         ]
+    },
+    "cats": {
+        npcOnEnd: NPCEventEndAction.fadeOut,
+        npcOnEndConfig: 
+        {
+            fadeDuration: 2000,
+        },
+        eventOnEnd: EventEndAction.spawnPerianderButterfly,
+        eventEndConfig: 
+        {
+            eventEndKey: 2,
+            spawnLocationNPCInstance: 'onyx0'
+        },
+        npc: 
+        [
+            {
+                instance: 'onyx0',
+                idleFrameSpacing: 4,
+                walkFrameSpacing: 4,
+                events: [
+                    {
+                        eventKey: 0,
+                        dialog: [
+                            "MEOW"
+                        ],
+                        onEnd: EndAction.nop,
+                        overlapAction: OverlapAction.nop
+                    },
+                    {
+                        eventKey: 1,
+                        dialog: [
+                            "MEOW"
+                        ],
+                        onEnd: EndAction.triggerEvent,
+                        overlapAction: OverlapAction.nop,
+                        triggerEventData: 
+                        {
+                            name: 'catraces',
+                            data: {
+                                catSelection: 'Onyx'
+                            }
+                        }
+                    },
+                ]
+            },
+            {
+                instance: 'reese0',
+                idleFrameSpacing: 4,
+                walkFrameSpacing: 4,
+                events: [
+                    {
+                        eventKey: 0,
+                        dialog: [
+                            "meow~"
+                        ],
+                        onEnd: EndAction.nop,
+                        overlapAction: OverlapAction.nop,
+                    },
+                    {
+                        eventKey: 1,
+                        dialog: [
+                            "meow~"
+                        ],
+                        onEnd: EndAction.triggerEvent,
+                        overlapAction: OverlapAction.nop,
+                        triggerEventData: 
+                        {
+                            name: 'catraces',
+                            data: {
+                                catSelection: 'Reese'
+                            }
+                        }
+                    },
+                ]
+            },
+            {
+                instance: 'jaredcats',
+                events: [
+                    {
+                        eventKey: 0,
+                        dialog: [
+                            "Welcome to the cat races~",
+                            "Talk to a cat and select the one you think will win!"
+                        ],
+                        onEnd: EndAction.incrementEvent,
+                        overlapAction: OverlapAction.nop
+                    },
+                    {
+                        eventKey: 1,
+                        dialog: [
+                            "Go on, talk to a kitty!"
+                        ],
+                        onEnd: EndAction.nop,
+                        overlapAction: OverlapAction.nop
+                    },
+                ]
+            }
+        ]
     }
 };

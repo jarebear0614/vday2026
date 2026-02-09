@@ -24,6 +24,97 @@ export class NopCharacterMovement implements ICharacterMovement
     }    
 }
 
+export class MoveRightCharacterMovement implements ICharacterMovement
+{
+    private name: string;
+    private npc: NPC;
+    private isPaused: boolean = false;
+
+    private xCenter: number = 0;
+    private yCenter: number = 0;
+    private distance: number = 0;
+    private velocity: number = 0;
+    private isMoving: boolean = false;
+
+    private destination: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
+    private reachedDesination: boolean = false;
+
+    constructor(xCenter: number, yCenter: number, distance: number, velocity: number = 128)
+    {
+        this.xCenter = xCenter;
+        this.yCenter = yCenter;
+        this.distance = distance;
+        this.velocity = velocity;
+
+        this.destination = new Phaser.Math.Vector2(this.xCenter + this.distance, this.yCenter);
+        console.log(this.destination);
+    }
+
+    pause(): void 
+    {
+        if(this.npc.destroyed || !this.npc.created || this.isPaused)
+        {
+            return;
+        }
+        
+        this.isPaused = true;
+        this.npc.body.setVelocity(0, 0);
+        this.npc.body.play(this.name.toLowerCase() + "_idle_right", true);
+    }
+
+    unpause(): void 
+    {
+        if(this.npc.destroyed || !this.npc.created || !this.isPaused)
+        {
+            return;
+        }
+
+        this.isPaused = false;
+
+        let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
+        this.npc.body.setVelocity(v.x, v.y);
+
+        this.npc.body.play(this.name.toLowerCase() + "_walk_right", true);
+    }
+
+    setNPC(name: string, npc: NPC): void 
+    {
+        this.name = name;
+        this.npc = npc;
+    }
+
+    update(delta: number): void 
+    {
+        if(!this.npc || this.isPaused)
+        {
+            return;
+        }
+
+        if(this.isMoving)
+        {
+            if(this.destination.distance(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)) <= 5)
+            {
+                this.isMoving = false;
+                this.npc.body.setVelocity(0, 0);
+                this.npc.body.play(this.name.toLowerCase() + "_idle_right");
+                this.reachedDesination = true;
+            }
+        } 
+        else 
+        {
+            if(!this.reachedDesination)
+            {
+                this.isMoving = true;
+                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.xCenter, this.yCenter)).normalize().scale(this.velocity);
+                this.npc.body.setVelocity(v.x, v.y);
+                this.npc.body.play(this.name.toLowerCase() + "_walk_right");
+            }
+        }
+    }
+    
+}
+
+
 
 export class RandomInRadiusCharacterMovement implements ICharacterMovement
 {

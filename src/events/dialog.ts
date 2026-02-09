@@ -3,6 +3,7 @@ export enum EndAction
     nop = "nop",
 
     incrementEvent = "incrementEvent",
+    triggerEvent = "triggerEvent",
 
     startScene = "startScene",
 
@@ -58,12 +59,16 @@ export class NPCEventDialog
     item?: string;
 
     overlapAction: OverlapAction = OverlapAction.nop;
+
+    triggerEventData?: {name: string, data: any};
 }
 
 export class NPCEvent
 {
     instance: string;
     events: NPCEventDialog[];
+    idleFrameSpacing?: number = 4;
+    walkFrameSpacing?: number = 6;
 }
 
 export class NPCEventUtility 

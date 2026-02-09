@@ -10,6 +10,7 @@ export class InteractiveConfig
     sourceDialog?: NPCEvent;
     eventName?: string;
     grantedItem?: string;
+    sourceTriggerEventData?: {name: string, data: any}
 }
 
 export class InteractiveTriggerConfig
@@ -39,6 +40,7 @@ export class Interactive
     sourceCharacter?: NPC;
     sceneTransition?: SceneTransitionConfig;
     grantedItem?: string;
+    eventTriggerData?: {name: string, data: any};
 
     constructor(messages: string[], type: string, eventName?: string, eventKeyTrigger?: number, config?: InteractiveConfig) 
     {
@@ -51,5 +53,6 @@ export class Interactive
         this.sourceCharacter = config?.sourceCharacter;
         this.sceneTransition = config?.sceneTransition;
         this.grantedItem = config?.grantedItem;
+        this.eventTriggerData = config?.sourceTriggerEventData;
     }
 }

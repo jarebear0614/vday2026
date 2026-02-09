@@ -29,6 +29,8 @@ export class NPC
     private x: number = 0;
     private y: number = 0;
     scale: number = 1;
+    idleFrameSpacing: number = 4;
+    walkFrameSpacing: number = 4;
 
     eventConfig?: NPCEventConfig;
 
@@ -39,7 +41,7 @@ export class NPC
     created: boolean = false;
     destroyed: boolean = false;
 
-    constructor(scene: BaseScene, name: string, instance: string, x: number, y: number, scale: number, movement: ICharacterMovement, eventConfig?: NPCEventConfig, overlapConfig?: NPCOverlapConfig)
+    constructor(scene: BaseScene, name: string, instance: string, x: number, y: number, scale: number, idleFrameSpacing: number, walkFrameSpacing: number, movement: ICharacterMovement, eventConfig?: NPCEventConfig, overlapConfig?: NPCOverlapConfig)
     {
         this.scene = scene;
         this.name = name;
@@ -50,6 +52,8 @@ export class NPC
         this.movement = movement;
         this.eventConfig = eventConfig;
         this.overlapConfig = overlapConfig;
+        this.idleFrameSpacing = idleFrameSpacing;
+        this.walkFrameSpacing = walkFrameSpacing;
 
         this.movement.setNPC(this.name, this);
 
@@ -71,28 +75,28 @@ export class NPC
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_idle_down',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 0, end: 3}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 0, end: this.idleFrameSpacing * 1 - 1}),
             frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
             repeat: -1
         });
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_idle_up',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 4, end: 7}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: this.idleFrameSpacing * 1, end: this.idleFrameSpacing * 2 - 1}),
             frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
             repeat: -1
         });
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_idle_right',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 8, end: 11}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: this.idleFrameSpacing * 2, end: this.idleFrameSpacing * 3 - 1}),
             frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
             repeat: -1
         });
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_idle_left',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: 12, end: 15}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_idle', {start: this.idleFrameSpacing * 3, end: this.idleFrameSpacing * 4 - 1}),
             frameRate: DEFAULT_IDLE_SPRITE_FRAMERATE,
             repeat: -1
         });
@@ -106,21 +110,21 @@ export class NPC
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_walk_up',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: 6, end: 11}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: this.walkFrameSpacing * 1, end: this.walkFrameSpacing * 2 - 1}),
             frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
             repeat: -1
         });
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_walk_right',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: 12, end: 17}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: this.walkFrameSpacing * 2, end: this.walkFrameSpacing * 3 - 1}),
             frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
             repeat: -1
         });
 
         this.scene.anims.create({
             key: this.name.toLowerCase() + '_walk_left',
-            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: 18, end: 23}),
+            frames: this.scene.anims.generateFrameNumbers(this.name.toLowerCase() + '_walk', {start: this.walkFrameSpacing * 3, end: this.walkFrameSpacing * 4 - 1}),
             frameRate: DEFAULT_WALK_SPRITE_FRAMERATE,
             repeat: -1
         });

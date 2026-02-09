@@ -3,7 +3,7 @@ import { Align } from '../util/align';
 import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DEFAULT_BUTTERFLY_SPRITE_FRAMERATE, DEFAULT_CATCH_SPRITE_FRAMERATE, DEFAULT_EFFECT_FRAMERATE, DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, HAIRSTREAK_BUTTERFLY_NAME, LUNAMOTH_BUTTERFLY_NAME, PERIANDER_BUTTERFLY_NAME, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
 import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
-import { NPCMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
+import { MoveRightCharacterMovement, NPCMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
 import { NPC, NPCEventConfig } from '../character/NPC';
 import { ICharacterMovement } from '../movement/ICharacterMovement';
 
@@ -145,6 +145,12 @@ export class Game extends BaseScene
         this.load.spritesheet('jared_walk', 'assets/jared/Jared-Walk.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('jared-fake_idle', 'assets/jared/Jared-Fake-Idle.png', {frameWidth: 32, frameHeight: 32});
         this.load.spritesheet('jared-fake_walk', 'assets/jared/Jared-Fake-Walk.png', {frameWidth: 32, frameHeight: 32});
+
+        this.load.spritesheet('onyx_idle', 'assets/sprites/cats/Onyx-Idle.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('onyx_walk', 'assets/sprites/cats/Onyx-Walk.png', {frameWidth: 32, frameHeight: 32});
+
+        this.load.spritesheet('reese_idle', 'assets/sprites/cats/Reese-Idle.png', {frameWidth: 32, frameHeight: 32});
+        this.load.spritesheet('reese_walk', 'assets/sprites/cats/Reese-Walk.png', {frameWidth: 32, frameHeight: 32});
 
         this.load.spritesheet('birdwing_butterfly_icon', 'assets/sprites/butterflies/icons/Birdwing Butterfly.png', {frameWidth: 16, frameHeight: 16});
         this.load.spritesheet('hairstreak_butterfly_icon', 'assets/sprites/butterflies/icons/Hairstreak Butterfly.png', {frameWidth: 16, frameHeight: 16});
@@ -603,6 +609,8 @@ export class Game extends BaseScene
                                        x!, 
                                        y!, 
                                        this.tilemapScale, 
+                                       dialog?.idleFrameSpacing ?? 4,
+                                       dialog?.walkFrameSpacing ?? 6,
                                        this.getMovementFromConfig(x! * this.tilemapScale, y! * this.tilemapScale, movement), 
                                        npcEventConfig,
                                        {
@@ -631,7 +639,8 @@ export class Game extends BaseScene
                                                                     toScene: messages.scene,
                                                                     fromX: messages.fromX ?? 0,
                                                                     fromY: messages.fromY ?? 0
-                                                                } : undefined
+                                                                } : undefined,
+                                                                sourceTriggerEventData: messages.triggerEventData
                                                             });
 
                                                             if(messages.overlapAction == OverlapAction.autoTrigger)
@@ -1068,7 +1077,8 @@ export class Game extends BaseScene
                             endAction: config.interactive.endAction,
                             sourceCharacter: config.interactive.sourceCharacter,
                             grantedItem: config.interactive.grantedItem,
-                            sceneTransition: config.interactive.sceneTransition
+                            sceneTransition: config.interactive.sceneTransition,
+                            sourceTriggerEventData: config.interactive.eventTriggerData
                         });
                     }
                     break;
@@ -1252,14 +1262,24 @@ export class Game extends BaseScene
         {
             this.triggerSceneFromConfig(config?.sceneTransition);
         }
-        else if (endAction == EndAction.grantItem && config?.grantedItem) 
+        else if(endAction == EndAction.triggerEvent && config?.sourceTriggerEventData)
         {
-            //this.grantItem(config.grantedItem, eventName);
-        }
-        else if (endAction == EndAction.clearItem) 
-        {
-            //this.currentItem?.destroy();
-            //this.incrementEvent(eventName);
+            if(config.sourceTriggerEventData.name == "catraces")
+            {
+                let npcs = this.gameEventManager.getCurrentEvent('cats')?.npcs ?? [];
+                let onyx = npcs.find((n) => {return n.instance == 'onyx0'});
+                let reese = npcs.find((n) => {return n.instance == 'reese0'});
+
+                if(onyx && reese)
+                {
+                    onyx.movement = new MoveRightCharacterMovement(onyx.body.x, onyx.body.y, 9 * TILE_SIZE * this.tilemapScale, 128);
+                    onyx.movement.setNPC(onyx.name, onyx);
+
+                    reese.movement = new MoveRightCharacterMovement(reese.body.x, reese.body.y, 9 * TILE_SIZE * this.tilemapScale, 128);
+                    reese.movement.setNPC(reese.name, reese);
+                }
+                
+            }
         }
         else if (endAction == EndAction.spawnBirdwingButterfly && sourceNPC) 
         {

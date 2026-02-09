@@ -325,7 +325,7 @@ export class Constellations extends BaseScene
 
                 fadeInTween.onCompleteHandler = () =>
                 {
-                    this.time.delayedCall(300, () => {
+                    this.time.delayedCall(2000, () => {
 
                         this.tweens.killTweensOf(this.currentText);
 
