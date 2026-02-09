@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="15">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="16">
  <editorsettings>
   <export target="../../maps/main.tmj" format="json"/>
  </editorsettings>
@@ -5534,6 +5534,17 @@
     {&quot;x&quot;: 45, &quot;y&quot;: 43},
     {&quot;x&quot;: 45, &quot;y&quot;: 48}
   ]
+}</property>
+   </properties>
+  </object>
+  <object id="15" name="Jared" type="character" x="111.333" y="81.3333" width="16" height="16">
+   <properties>
+    <property name="eventKeyEnd" type="int" value="2"/>
+    <property name="eventKeyTrigger" type="int" value="0"/>
+    <property name="eventName" value="constellations"/>
+    <property name="instance" value="jaredconstellations"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;nop&quot;
 }</property>
    </properties>
   </object>

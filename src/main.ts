@@ -8,6 +8,7 @@ import { Preloader } from './scenes/Preloader';
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
 
 import { Game, Types } from "phaser";
+import { Constellations } from './scenes/Constellations';
 
 let requestedHeight = 1024;
 let gameRatio = window.innerWidth < window.innerHeight ? window.innerWidth / window.innerHeight : window.innerHeight / window.innerWidth;
@@ -30,7 +31,8 @@ const config: Types.Core.GameConfig = {
         Preloader,
         MainMenu,
         MainGame,
-        GameOver
+        GameOver,
+        Constellations
     ],
     pixelArt: true,
     physics: {

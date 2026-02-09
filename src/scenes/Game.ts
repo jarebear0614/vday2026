@@ -8,10 +8,11 @@ import { NPC, NPCEventConfig } from '../character/NPC';
 import { ICharacterMovement } from '../movement/ICharacterMovement';
 
 import RexUIPlugin from 'phaser3-rex-plugins/templates/ui/ui-plugin.js';
-import { Interactive, InteractiveConfig, InteractiveTriggerConfig } from '../events/interactive';
+import { Interactive, InteractiveConfig, InteractiveTriggerConfig, SceneTransitionConfig } from '../events/interactive';
 import { EVENT_KEY_MAX, GameEventManager } from '../events/gameEvents';
 import { EndAction, EventEndAction, NPCEventEndAction, NPCEventUtility, OverlapAction } from '../events/dialog';
 import { npcEvents } from '../util/events';
+import { GameState } from '../util/gameState';
 
 export class Game extends BaseScene
 {
@@ -109,20 +110,26 @@ export class Game extends BaseScene
     rexUI: RexUIPlugin;
     dialog: RexUIPlugin.Dialog | null;
 
+    gameState: GameState = new GameState();
+
     constructor ()
     {
         super('Game');
     }
 
-    init()
+    init(data: any)
     {
         this.cameras.main.fadeOut(1);
+
+        if(data && data.gameState && data.gameState instanceof GameState) 
+        {
+            this.gameState = data.gameState;
+        }
 
         this.currentInteractiveObject = null;
 
         this.load.on('complete', (loader: any, totalComplete: number, totalFailed: number) => 
         {
-            console.log(loader, totalComplete, totalFailed);
             this.cameras.main.fadeIn(300);
         });
     }
@@ -375,21 +382,25 @@ export class Game extends BaseScene
                         {
                             this.birdwingButterflyIcon.setFrame(0);
                             b.destroy();
+                            this.gameState.birdwingButterflyObtained = true;
                         }
                         else if (b == this.hairstreakButterfly)
                         {
                             this.hairstreakButterflyIcon.setFrame(0);
                             b.destroy();
+                            this.gameState.hairStreakButterflyObtained = true;
                         }
                         else if(b == this.lunaMothButterfly)
                         {
                             this.lunaMothButterflyIcon.setFrame(0);
                             b.destroy();
+                            this.gameState.lunaMothButterflyObtained = true;
                         }
                         else if(b == this.perianderMetalmarkButterfly)
                         {
                             this.perianderMetalmarkButterflyIcon.setFrame(0);
                             b.destroy();
+                            this.gameState.perianderButterflyObtained = true;
                         }
 
                         this.sparkleSprite.x = b.x;
@@ -959,13 +970,10 @@ export class Game extends BaseScene
                     {
                         let instance = deactivateInfo.eventEndConfig?.spawnLocationNPCInstance;
                         let npc = deactivateInfo.npcs.find((f) => f.instance == instance);
-                        console.log(deactivateInfo);
                         if((deactivateInfo.eventEndAction & EventEndAction.spawnBirdwingButterfly) == EventEndAction.spawnBirdwingButterfly)
                         {
-                            console.log('birdwing');
                             if(npc)
                             {
-                                console.log('spawning');
                                 this.spawnBirdwingButterfly(npc.body.x, npc.body.y);
                             }
                         }
@@ -1039,17 +1047,18 @@ export class Game extends BaseScene
                             title: config.interactive.title,
                             endAction: config.interactive.endAction,
                             sourceCharacter: config.interactive.sourceCharacter,
-                            grantedItem: config.interactive.grantedItem
+                            grantedItem: config.interactive.grantedItem,
+                            sceneTransition: config.interactive.sceneTransition
                         });
                     }
                     break;
 
-                // case "scene":
-                //     if(config.scene)
-                //     {
-                //         this.triggerSceneFromConfig(config.scene);
-                //     }
-                //     break;
+                case "scene":
+                    if(config.scene)
+                    {
+                        this.triggerSceneFromConfig(config.scene);
+                    }
+                    break;
 
                 // case "grantItem":
                 //     if(config.interactive && config.interactive.grantedItem)
@@ -1196,12 +1205,32 @@ export class Game extends BaseScene
             });            
     }
 
+    private triggerSceneFromConfig(config: SceneTransitionConfig) {
+        if(config)
+        {
+            this.gameState.fromScene = this.scene.key;
+            this.gameState.spawnX = config.fromX;
+            this.gameState.spawnY = config.fromY;
+
+            this.gameEventManager.purgeCharactersFromEvents();
+
+            //this.theme.pause();
+
+            this.scene.start(config.toScene, {
+                gameState: this.gameState
+            });
+        }
+    }
 
     private handleEndAction(endAction: EndAction, eventName: string | undefined, config: InteractiveConfig | undefined, sourceNPC: NPC | undefined) 
     {
         if (endAction == EndAction.incrementEvent) 
         {
             this.incrementEvent(eventName);
+        }
+        else if(endAction == EndAction.startScene && config?.sceneTransition)
+        {
+            this.triggerSceneFromConfig(config?.sceneTransition);
         }
         else if (endAction == EndAction.grantItem && config?.grantedItem) 
         {

@@ -1041,6 +1041,43 @@
                  "width":16,
                  "x":640,
                  "y":768
+                }, 
+                {
+                 "height":16,
+                 "id":15,
+                 "name":"Jared",
+                 "properties":[
+                        {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":2
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":0
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"constellations"
+                        }, 
+                        {
+                         "name":"instance",
+                         "type":"string",
+                         "value":"jaredconstellations"
+                        }, 
+                        {
+                         "name":"movement",
+                         "type":"string",
+                         "value":"{\n  \"type\": \"nop\"\n}"
+                        }],
+                 "rotation":0,
+                 "type":"character",
+                 "visible":true,
+                 "width":16,
+                 "x":111.333333333333,
+                 "y":81.3333333333333
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1049,7 +1086,7 @@
          "y":0
         }],
  "nextlayerid":17,
- "nextobjectid":15,
+ "nextobjectid":16,
  "orientation":"orthogonal",
  "renderorder":"left-down",
  "tiledversion":"1.11.2",

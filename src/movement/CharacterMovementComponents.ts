@@ -67,7 +67,7 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
     
     pause(): void 
     {
-        if(this.isPaused)
+        if(this.npc.destroyed || !this.npc.created || this.isPaused)
         {
             return;
         }
@@ -79,14 +79,14 @@ export class RandomInRadiusCharacterMovement implements ICharacterMovement
 
     unpause(): void 
     {
-        if(!this.isPaused)
+        if(this.npc.destroyed || !this.npc.created || !this.isPaused)
         {
             return;
         }
 
         this.isPaused = false;
 
-        let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(this.start).normalize().scale(this.velocity);
+        let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
         this.npc.body.setVelocity(v.x, v.y);
 
         this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction, true);
@@ -226,7 +226,7 @@ export class WaypointCharacterMovement implements ICharacterMovement
     
     pause(): void 
     {
-        if(this.npc.destroyed || !this.npc.created)
+        if(this.npc.destroyed || !this.npc.created || this.isPaused)
         {
             return;
         }
@@ -238,13 +238,13 @@ export class WaypointCharacterMovement implements ICharacterMovement
 
     unpause(): void 
     {
-        if(this.npc.destroyed || !this.npc.created)
+        if(this.npc.destroyed || !this.npc.created || !this.isPaused)
         {
             return;
         }
         
         this.isPaused = false;
-        let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(this.start).normalize().scale(this.velocity);
+        let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
         this.npc.body.setVelocity(v.x, v.y);
         this.npc.body.play(this.name.toLowerCase() + "_walk_" + this.direction, true);
     }

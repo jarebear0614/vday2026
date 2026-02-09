@@ -123,5 +123,45 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                     ]
             },
         ]
+    },
+    "constellations":
+    {
+        npcOnEnd: NPCEventEndAction.fadeOut,
+        npcOnEndConfig: 
+        {
+            fadeDuration: 2000,
+        },
+        eventOnEnd: EventEndAction.spawnLunaMothButterfly,
+        eventEndConfig: 
+        {
+            eventEndKey: 2,
+            spawnLocationNPCInstance: 'jaredconstellations'
+        },
+        npc: [
+            {
+                instance: 'jaredconstellations',
+                events: [
+                    {
+                        eventKey: 0,
+                        dialog: [
+                            "Look at at the night sky, love, and see our future~"
+                        ],
+                        onEnd: EndAction.startScene,
+                        scene: "Constellations",
+                        fromX: 7,
+                        fromY: 6,
+                        overlapAction: OverlapAction.nop
+                    },
+                    {
+                        eventKey: 1,
+                        dialog: [
+                            "Never forget that my love for you is written in the stars~"
+                        ],
+                        onEnd: EndAction.incrementEvent,
+                        overlapAction: OverlapAction.nop
+                    },
+                ]
+            },
+        ]
     }
 };
