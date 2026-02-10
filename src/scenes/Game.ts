@@ -223,7 +223,7 @@ export class Game extends BaseScene
         this.configureForegroundTilemaps();
         this.configureInput();
         this.configureCharacterObjects();
-        this.configureButterflies();
+        //this.configureButterflies();
         this.configureUI();
         this.configureMusic();        
         this.configureEvent();
