@@ -15,8 +15,8 @@
         "[123, 124].find((x) =>{ return x == 123; })"
     ],
     "expandedProjectPaths": [
-        ".",
-        "maps"
+        "maps",
+        "."
     ],
     "fileStates": {
         "": {
@@ -83,11 +83,11 @@
             "expandedObjectLayers": [
                 15
             ],
-            "scale": 1,
-            "selectedLayer": 13,
+            "scale": 5.5,
+            "selectedLayer": 15,
             "viewCenter": {
-                "x": 496,
-                "y": 551.5
+                "x": 269.90909090909093,
+                "y": 423.6363636363636
             }
         },
         "maps/main.tmx#Big Tree Extruded": {
