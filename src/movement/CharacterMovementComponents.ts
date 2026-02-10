@@ -24,7 +24,7 @@ export class NopCharacterMovement implements ICharacterMovement
     }    
 }
 
-export class MoveRightCharacterMovement implements ICharacterMovement
+export class MoveHorizontallyCharacterMovement implements ICharacterMovement
 {
     private name: string;
     private npc: NPC;
@@ -39,6 +39,8 @@ export class MoveRightCharacterMovement implements ICharacterMovement
     private destination: Phaser.Math.Vector2 = Phaser.Math.Vector2.ZERO;
     private reachedDesination: boolean = false;
 
+    onCompleteHandler: ((npc: NPC) => void) | undefined;
+
     constructor(xCenter: number, yCenter: number, distance: number, velocity: number = 128)
     {
         this.xCenter = xCenter;
@@ -47,7 +49,19 @@ export class MoveRightCharacterMovement implements ICharacterMovement
         this.velocity = velocity;
 
         this.destination = new Phaser.Math.Vector2(this.xCenter + this.distance, this.yCenter);
-        console.log(this.destination);
+    }
+
+    setDestinationDistance(distance: number)
+    {
+        this.distance = distance;
+        this.destination = new Phaser.Math.Vector2(this.npc.body.x + distance, this.yCenter);
+        this.isMoving = false;
+        this.reachedDesination = false;
+    }
+
+    setVelocity(velocity: number)
+    {
+        this.velocity = velocity;
     }
 
     pause(): void 
@@ -85,7 +99,7 @@ export class MoveRightCharacterMovement implements ICharacterMovement
 
     update(delta: number): void 
     {
-        if(!this.npc || this.isPaused)
+        if(!this.npc || this.npc.destroyed || this.isPaused)
         {
             return;
         }
@@ -96,8 +110,14 @@ export class MoveRightCharacterMovement implements ICharacterMovement
             {
                 this.isMoving = false;
                 this.npc.body.setVelocity(0, 0);
+                this.npc.body.setPosition(this.destination.x, this.destination.y);
                 this.npc.body.play(this.name.toLowerCase() + "_idle_right");
                 this.reachedDesination = true;
+
+                if(this.onCompleteHandler)
+                {
+                    this.onCompleteHandler(this.npc);
+                }
             }
         } 
         else 
@@ -105,16 +125,21 @@ export class MoveRightCharacterMovement implements ICharacterMovement
             if(!this.reachedDesination)
             {
                 this.isMoving = true;
-                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.xCenter, this.yCenter)).normalize().scale(this.velocity);
+                let v = new Phaser.Math.Vector2(this.destination.x, this.destination.y).subtract(new Phaser.Math.Vector2(this.npc.body.x, this.npc.body.y)).normalize().scale(this.velocity);
                 this.npc.body.setVelocity(v.x, v.y);
-                this.npc.body.play(this.name.toLowerCase() + "_walk_right");
+
+                if(this.distance < 0)
+                {
+                    this.npc.body.play(this.name.toLowerCase() + "_walk_left");
+                }
+                else
+                {
+                    this.npc.body.play(this.name.toLowerCase() + "_walk_right");   
+                }
             }
         }
-    }
-    
+    }    
 }
-
-
 
 export class RandomInRadiusCharacterMovement implements ICharacterMovement
 {

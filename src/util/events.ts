@@ -174,7 +174,7 @@ export const npcEvents: { [key: string]: NPCEventData; } =
         eventEndConfig: 
         {
             eventEndKey: 2,
-            spawnLocationNPCInstance: 'onyx0'
+            spawnLocationNPCInstance: 'jaredcats'
         },
         npc: 
         [
@@ -200,7 +200,7 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                         overlapAction: OverlapAction.nop,
                         triggerEventData: 
                         {
-                            name: 'catraces',
+                            name: 'cats',
                             data: {
                                 catSelection: 'Onyx'
                             }
@@ -230,7 +230,7 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                         overlapAction: OverlapAction.nop,
                         triggerEventData: 
                         {
-                            name: 'catraces',
+                            name: 'cats',
                             data: {
                                 catSelection: 'Reese'
                             }
@@ -253,9 +253,19 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                     {
                         eventKey: 1,
                         dialog: [
-                            "Go on, talk to a kitty!"
+                            "Go on, talk to a kitty!",
+                            "If you guessed incorrectly, wait for them to move back to the starting line and pick again!"
                         ],
                         onEnd: EndAction.nop,
+                        overlapAction: OverlapAction.nop
+                    },
+                    {
+                        eventKey: 2,
+                        dialog: [
+                            "You won, I'll have to reward you later",
+                            "But for now, this butterfly is yours."
+                        ],
+                        onEnd: EndAction.incrementEvent,
                         overlapAction: OverlapAction.nop
                     },
                 ]

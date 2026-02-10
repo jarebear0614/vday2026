@@ -194,6 +194,11 @@ export class NPC
 
     update(delta: number)
     {
+        if(this.destroyed)
+        {
+            return;
+        }
+        
         this.movement?.update(delta);
         this.overlapDialogSprite.setPosition(this.body.x, this.body.y);
         this.overlapDialogSprite.refreshBody();

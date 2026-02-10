@@ -3,7 +3,7 @@ import { Align } from '../util/align';
 import { BIRDWING_BUTTERFLY_NAME, CATCHING_DISTANCE, DEFAULT_BUTTERFLY_SCALE, DEFAULT_BUTTERFLY_SPRITE_FRAMERATE, DEFAULT_CATCH_SPRITE_FRAMERATE, DEFAULT_EFFECT_FRAMERATE, DEFAULT_IDLE_SPRITE_FRAMERATE, DEFAULT_SPRITE_SCALE, DEFAULT_WALK_SPRITE_FRAMERATE, HAIRSTREAK_BUTTERFLY_NAME, LUNAMOTH_BUTTERFLY_NAME, PERIANDER_BUTTERFLY_NAME, TILE_SCALE, TILE_SIZE } from '../util/const';
 import { BaseScene } from './BaseScene';
 import AnimatedTilesPlugin from '../plugins/animated_tiles/animated_tiles';
-import { MoveRightCharacterMovement, NPCMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
+import { MoveHorizontallyCharacterMovement, NPCMovementConfig, NopCharacterMovement, RandomInRadiusCharacterMovement, WaypointCharacterMovement } from '../movement/CharacterMovementComponents';
 import { NPC, NPCEventConfig } from '../character/NPC';
 import { ICharacterMovement } from '../movement/ICharacterMovement';
 
@@ -111,6 +111,10 @@ export class Game extends BaseScene
     dialog: RexUIPlugin.Dialog | null;
 
     gameState: GameState = new GameState();
+    endIsNearTriggered: boolean = false;
+    currentText: GameObjects.Text;
+    endingText: string[] = ["You've collected all the butterflies", "Now present them to the fountain, love"];
+    textIndex = 0;
 
     constructor ()
     {
@@ -234,6 +238,12 @@ export class Game extends BaseScene
             }
         }
 
+        this.currentText = this.add.text(0, 0, 'test', {fontFamily: 'Arial', fontSize: 36, color: '#ffffff'})
+            .setStroke("#000000", 4)
+            .setScrollFactor(0)
+            .setAlpha(0.0)
+            .setWordWrapWidth(this.getGameWidth() * 0.7)
+            .setAlign('center');
         //this.map.layers.find((l) => { return l.name == "colliders"})?.tilemapLayer.getTileAt().
     }
 
@@ -792,10 +802,10 @@ export class Game extends BaseScene
 
     configureUI() 
     {
-        this.birdwingButterflyIcon = this.add.sprite(0, 0, 'birdwing_butterfly_icon', 3).setScrollFactor(0);
-        this.hairstreakButterflyIcon = this.add.sprite(0, 0, 'hairstreak_butterfly_icon', 3).setScrollFactor(0);
-        this.lunaMothButterflyIcon = this.add.sprite(0, 0, 'lunamoth_butterfly_icon', 3).setScrollFactor(0);
-        this.perianderMetalmarkButterflyIcon = this.add.sprite(0, 0, 'periander_metalmark_butterfly_icon', 3).setScrollFactor(0);
+        this.birdwingButterflyIcon = this.add.sprite(0, 0, 'birdwing_butterfly_icon', 3).setScrollFactor(0).setFrame(this.gameState.birdwingButterflyObtained ? 0 : 3);
+        this.hairstreakButterflyIcon = this.add.sprite(0, 0, 'hairstreak_butterfly_icon', 3).setScrollFactor(0).setFrame(this.gameState.hairStreakButterflyObtained ? 0 : 3);
+        this.lunaMothButterflyIcon = this.add.sprite(0, 0, 'lunamoth_butterfly_icon', 3).setScrollFactor(0).setFrame(this.gameState.lunaMothButterflyObtained ? 0 : 3);
+        this.perianderMetalmarkButterflyIcon = this.add.sprite(0, 0, 'periander_metalmark_butterfly_icon', 3).setScrollFactor(0).setFrame(this.gameState.perianderButterflyObtained ? 0 : 3);
 
         Align.scaleObjectsToGameWidth([this.birdwingButterflyIcon, this.hairstreakButterflyIcon, this.lunaMothButterflyIcon, this.perianderMetalmarkButterflyIcon], 0.05, this);
 
@@ -958,6 +968,19 @@ export class Game extends BaseScene
         {
             this.megan.y = this.yLimit;
         }
+
+        if(!this.endIsNearTriggered)
+        {
+            if(this.gameState.birdwingButterflyObtained && 
+                this.gameState.hairStreakButterflyObtained && 
+                this.gameState.lunaMothButterflyObtained && 
+                this.gameState.perianderButterflyObtained)
+            {
+                this.endIsNearTriggered = true;
+                this.isUpdating = false;
+                this.updateText();
+            }
+        }
     }
 
     updateButterflies(time: number)
@@ -968,6 +991,54 @@ export class Game extends BaseScene
         for(const butterfly of this.butterflies)
         {
             butterfly.setPosition(butterfly.x + xCycle, butterfly.y + yCycle);
+        }
+    }
+
+    updateText()
+    {
+        this.currentText.text = this.endingText[this.textIndex];
+
+        this.currentText.x = this.getGameWidth() / 2 - this.currentText.displayWidth / 2;
+        this.currentText.y = this.getGameHeight() / 2 - this.currentText.displayHeight / 2;
+
+        let fadeInTween = this.tweens.add({
+            targets: this.currentText,
+            alpha: { from: 0, to: 1 },
+            ease: 'Linear',
+            duration: 1500,
+            repeat: 0,
+            yoyo: false
+        });
+
+        fadeInTween.onCompleteHandler = () =>
+        {
+            this.time.delayedCall(300, () => {
+
+                this.tweens.killTweensOf(this.currentText);
+
+                let fadeOutTween = this.tweens.add({
+                    targets: this.currentText,
+                    alpha: { from: this.currentText.alpha, to: 0 },
+                    ease: 'Linear',
+                    duration: 1500,
+                    repeat: 0,
+                    yoyo: false
+                });
+
+                fadeOutTween.onCompleteHandler = () =>
+                {
+                    this.tweens.killTweensOf(this.currentText);
+                    this.textIndex++;
+                    if(this.textIndex < this.endingText.length)
+                    {
+                        this.updateText();
+                    }
+                    else
+                    {
+                        this.isUpdating = true;
+                    }
+                }
+            })
         }
     }
 
@@ -1264,21 +1335,87 @@ export class Game extends BaseScene
         }
         else if(endAction == EndAction.triggerEvent && config?.sourceTriggerEventData)
         {
-            if(config.sourceTriggerEventData.name == "catraces")
+            if(config.sourceTriggerEventData.name == "cats")
             {
                 let npcs = this.gameEventManager.getCurrentEvent('cats')?.npcs ?? [];
+                let jared = npcs.find((n) => {return n.instance == 'jaredcats'});
                 let onyx = npcs.find((n) => {return n.instance == 'onyx0'});
                 let reese = npcs.find((n) => {return n.instance == 'reese0'});
+                let selection: string = config.sourceTriggerEventData.data.catSelection;
 
                 if(onyx && reese)
                 {
-                    onyx.movement = new MoveRightCharacterMovement(onyx.body.x, onyx.body.y, 9 * TILE_SIZE * this.tilemapScale, 128);
-                    onyx.movement.setNPC(onyx.name, onyx);
+                    let destinationDistance = 6 * TILE_SIZE * this.tilemapScale;
+                    let onyxMovement = !(onyx.movement instanceof NopCharacterMovement) ? onyx.movement as MoveHorizontallyCharacterMovement : new MoveHorizontallyCharacterMovement(onyx.body.x, onyx.body.y, destinationDistance, Math.round(Math.random() * 64) + 64);
+                    let reeseMovement = !(reese.movement instanceof NopCharacterMovement) ? reese.movement as MoveHorizontallyCharacterMovement :  new MoveHorizontallyCharacterMovement(reese.body.x, reese.body.y, destinationDistance, Math.round(Math.random() * 64) + 64);
 
-                    reese.movement = new MoveRightCharacterMovement(reese.body.x, reese.body.y, 9 * TILE_SIZE * this.tilemapScale, 128);
-                    reese.movement.setNPC(reese.name, reese);
-                }
-                
+                    if(!onyxMovement.onCompleteHandler)
+                    {
+                        let instances = 0;
+                        let direction = "right";
+                        let winner = false;
+                        let completeHandler = (npc: NPC) =>
+                        {
+                            console.log('instances', instances);
+                            if(direction == "right")
+                            {                        
+                                instances++;
+
+                                if(instances == 1)
+                                {
+                                    if(selection == npc.name)
+                                    {
+                                        winner = true;
+                                    }
+                                }
+                                else if(instances == 2)
+                                {
+                                    if(winner == false)
+                                    {
+                                        onyxMovement.setDestinationDistance(-destinationDistance);
+                                        reeseMovement.setDestinationDistance(-destinationDistance);
+                                        onyxMovement.setVelocity(128);
+                                        reeseMovement.setVelocity(128);
+                                        instances = 0;
+                                        direction = "left";
+                                    }
+                                    else
+                                    {
+                                        let dialog = npcEvents['cats'].npc[2].events[npcEvents['cats'].npc[2].events.length - 1].dialog;
+                                        this.showDialog(dialog, jared,
+                                        {
+                                            endAction: EndAction.incrementEvent,
+                                            eventName: 'cats',                                            
+                                        });
+                                    }
+                                }
+                            }
+                            else if(direction == "left")
+                            {
+                                instances++;
+                                if(instances == 2)
+                                {
+                                    instances = 0;
+                                    direction = "right";
+                                }
+                            }
+                        }
+                        onyxMovement.onCompleteHandler = completeHandler;
+                        onyx.movement = onyxMovement;
+                        onyx.movement.setNPC(onyx.name, onyx);
+                        
+                        reeseMovement.onCompleteHandler = completeHandler;
+                        reese.movement = reeseMovement;
+                        reese.movement.setNPC(reese.name, reese);
+                    }
+                    else
+                    {
+                        onyxMovement.setDestinationDistance(destinationDistance);
+                        reeseMovement.setDestinationDistance(destinationDistance);
+                        onyxMovement.setVelocity(Math.round(Math.random() * 64) + 64);
+                        reeseMovement.setVelocity(Math.round(Math.random() * 64) + 64);
+                    }
+                }                
             }
         }
         else if (endAction == EndAction.spawnBirdwingButterfly && sourceNPC) 
