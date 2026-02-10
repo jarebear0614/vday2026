@@ -271,5 +271,30 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                 ]
             }
         ]
+    },
+    "end": 
+    {
+        npcOnEnd: NPCEventEndAction.nop,
+        eventOnEnd: EventEndAction.nop,
+        npc: [
+            {
+                instance: 'jaredend',
+                events: [
+                    {
+                        eventKey: 1,
+                        dialog: [
+                            "Would you like to watch with me?"
+                        ],
+                        onEnd: EndAction.triggerEvent,
+                        triggerEventData:
+                        {
+                            name: "endscene",
+                            data: {}
+                        },
+                        overlapAction: OverlapAction.nop
+                    }
+                ]
+            },
+        ]
     }
 };

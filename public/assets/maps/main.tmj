@@ -787,7 +787,75 @@
          "draworder":"topdown",
          "id":15,
          "name":"map_butterflies",
-         "objects":[],
+         "objects":[
+                {
+                 "height":0,
+                 "id":24,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"birdwing"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":231.454545454545,
+                 "y":491.272727272727
+                }, 
+                {
+                 "height":0,
+                 "id":25,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"hairstreak"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":268.727272727273,
+                 "y":498.727272727273
+                }, 
+                {
+                 "height":0,
+                 "id":26,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"lunamoth"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":311.818181818182,
+                 "y":510.181818181818
+                }, 
+                {
+                 "height":0,
+                 "id":27,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"periander"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":293.818181818182,
+                 "y":541.272727272727
+                }],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,
@@ -1041,7 +1109,7 @@
                  "visible":true,
                  "width":16,
                  "x":282.333,
-                 "y":176.3333
+                 "y":176.333
                 }, 
                 {
                  "height":16,
@@ -1153,6 +1221,122 @@
                  "width":16,
                  "x":31.6667,
                  "y":736.333
+                }, 
+                {
+                 "height":16,
+                 "id":19,
+                 "name":"Jared",
+                 "properties":[
+                        {
+                         "name":"eventKeyEnd",
+                         "type":"int",
+                         "value":9999
+                        }, 
+                        {
+                         "name":"eventKeyTrigger",
+                         "type":"int",
+                         "value":1
+                        }, 
+                        {
+                         "name":"eventName",
+                         "type":"string",
+                         "value":"end"
+                        }, 
+                        {
+                         "name":"instance",
+                         "type":"string",
+                         "value":"jaredend"
+                        }, 
+                        {
+                         "name":"movement",
+                         "type":"string",
+                         "value":"{\n  \"type\": \"nop\"\n}"
+                        }],
+                 "rotation":0,
+                 "type":"character",
+                 "visible":true,
+                 "width":16,
+                 "x":264,
+                 "y":432
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":17,
+         "name":"map_endspawns",
+         "objects":[
+                {
+                 "height":16,
+                 "id":20,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"birdwing"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":248,
+                 "y":384
+                }, 
+                {
+                 "height":16,
+                 "id":21,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"hairstreak"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":280,
+                 "y":384
+                }, 
+                {
+                 "height":16,
+                 "id":22,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"lunamoth"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":232,
+                 "y":400
+                }, 
+                {
+                 "height":16,
+                 "id":23,
+                 "name":"",
+                 "properties":[
+                        {
+                         "name":"butterfly",
+                         "type":"string",
+                         "value":"periander"
+                        }],
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":16,
+                 "x":296,
+                 "y":400
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1160,8 +1344,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":17,
- "nextobjectid":19,
+ "nextlayerid":18,
+ "nextobjectid":28,
  "orientation":"orthogonal",
  "renderorder":"left-down",
  "tiledversion":"1.11.2",

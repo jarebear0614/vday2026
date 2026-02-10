@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="17" nextobjectid="19">
+<map version="1.10" tiledversion="1.11.2" orientation="orthogonal" renderorder="left-down" width="60" height="60" tilewidth="16" tileheight="16" infinite="0" nextlayerid="18" nextobjectid="28">
  <editorsettings>
   <export target="../../maps/main.tmj" format="json"/>
  </editorsettings>
@@ -5433,7 +5433,28 @@
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
 </data>
  </layer>
- <objectgroup id="15" name="map_butterflies"/>
+ <objectgroup id="15" name="map_butterflies">
+  <object id="24" x="231.455" y="491.273">
+   <properties>
+    <property name="butterfly" value="birdwing"/>
+   </properties>
+  </object>
+  <object id="25" x="268.727" y="498.727">
+   <properties>
+    <property name="butterfly" value="hairstreak"/>
+   </properties>
+  </object>
+  <object id="26" x="311.818" y="510.182">
+   <properties>
+    <property name="butterfly" value="lunamoth"/>
+   </properties>
+  </object>
+  <object id="27" x="293.818" y="541.273">
+   <properties>
+    <property name="butterfly" value="periander"/>
+   </properties>
+  </object>
+ </objectgroup>
  <objectgroup id="7" name="map_transport"/>
  <objectgroup id="8" name="map_interactive"/>
  <objectgroup id="9" name="map_character">
@@ -5566,6 +5587,39 @@
     <property name="movement">{
   &quot;type&quot;: &quot;nop&quot;
 }</property>
+   </properties>
+  </object>
+  <object id="19" name="Jared" type="character" x="264" y="432" width="16" height="16">
+   <properties>
+    <property name="eventKeyEnd" type="int" value="9999"/>
+    <property name="eventKeyTrigger" type="int" value="1"/>
+    <property name="eventName" value="end"/>
+    <property name="instance" value="jaredend"/>
+    <property name="movement">{
+  &quot;type&quot;: &quot;nop&quot;
+}</property>
+   </properties>
+  </object>
+ </objectgroup>
+ <objectgroup id="17" name="map_endspawns">
+  <object id="20" x="248" y="384" width="16" height="16">
+   <properties>
+    <property name="butterfly" value="birdwing"/>
+   </properties>
+  </object>
+  <object id="21" x="280" y="384" width="16" height="16">
+   <properties>
+    <property name="butterfly" value="hairstreak"/>
+   </properties>
+  </object>
+  <object id="22" x="232" y="400" width="16" height="16">
+   <properties>
+    <property name="butterfly" value="lunamoth"/>
+   </properties>
+  </object>
+  <object id="23" x="296" y="400" width="16" height="16">
+   <properties>
+    <property name="butterfly" value="periander"/>
    </properties>
   </object>
  </objectgroup>
