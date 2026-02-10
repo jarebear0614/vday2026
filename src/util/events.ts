@@ -148,8 +148,8 @@ export const npcEvents: { [key: string]: NPCEventData; } =
                         ],
                         onEnd: EndAction.startScene,
                         scene: "Constellations",
-                        fromX: 7,
-                        fromY: 6,
+                        fromX: 18,
+                        fromY: 12,
                         overlapAction: OverlapAction.nop
                     },
                     {

@@ -54,6 +54,7 @@ export class Game extends BaseScene
     isPreviousDownDown: boolean = false;
 
     interactKey: Phaser.Input.Keyboard.Key | undefined;
+    interactText: Phaser.GameObjects.Text;
 
     isInteractKeyDown: boolean = false;
     isPreviousInteractKeyDown: boolean = false;
@@ -191,6 +192,9 @@ export class Game extends BaseScene
 
         this.load.audio('labyrinth', 'assets/music/labyrinth.mp3');
 
+        this.load.image('dpadfull', 'assets/controls/dpadfull.png');
+        this.load.image('interact', 'assets/controls/A.png');
+
         this.load.scenePlugin({
             key: 'rexuiplugin',
             url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexuiplugin.min.js',
@@ -225,7 +229,6 @@ export class Game extends BaseScene
 
         if(this.gameState.fromScene === "Constellations")
         {
-            console.log(this.gameEventManager.getCurrentEventProgress("constellations"));
             if(this.gameEventManager.getCurrentEventProgress("constellations") === 0 && this.gameState.completedConstellations)
             {
                 this.gameEventManager.incrementEvent("constellations");
@@ -233,7 +236,8 @@ export class Game extends BaseScene
                 let dialog = npcEvents['constellations'].npc[0].events[npcEvents['constellations'].npc[0].events.length - 1].dialog;
                 this.showDialog(dialog, undefined,
                 {
-                    endAction: EndAction.incrementEvent
+                    endAction: EndAction.incrementEvent,
+                    eventName: "constellations"
                 });
             }
         }
@@ -472,6 +476,112 @@ export class Game extends BaseScene
 
         this.cursors = this.input.keyboard?.createCursorKeys();
         this.interactKey = this.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+
+        let dpadTopLeft = {x: this.getGameWidth() * .25, y: this.getGameHeight() * .85};
+        let dpadfull = this.add.image(0, 0, 'dpadfull').setScrollFactor(0);     
+        
+        let interactButton = this.add.image(this.getGameWidth() * 0.80, this.getGameHeight() * 0.88, 'interact').setInteractive({useHandCursor: true}).setScrollFactor(0);
+
+        Align.scaleToGameWidth(dpadfull, 0.26, this);
+        Align.scaleToGameWidth(interactButton, 0.18, this);
+
+        this.interactText = this.add.text(0, 0, '!!', {fontFamily: 'Arial', fontSize: 64, color: '#ff0000'})
+            .setStroke("#000000", 2)
+            .setScrollFactor(0)
+            .setVisible(false);
+
+        this.interactText.setPosition(interactButton.x + (interactButton.displayWidth / 2) * 0.45, interactButton.y - (interactButton.displayHeight / 2) - this.interactText.displayHeight / 2);
+
+        let dpadWidth = dpadfull.scaleX * 80;
+        dpadfull.setPosition(dpadTopLeft.x, dpadTopLeft.y + dpadWidth  /2);
+
+        this.add.zone(dpadTopLeft.x, dpadTopLeft.y - 5, dpadWidth / 2, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsUp').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y + dpadWidth / 2, dpadWidth - 10, dpadWidth / 2).setInteractive({useHandCursor: true}).setName('controlsLeft').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x, dpadTopLeft.y + dpadWidth + 5, dpadWidth / 2, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsDown').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y + dpadWidth / 2, dpadWidth - 10, dpadWidth / 2).setInteractive({useHandCursor: true}).setName('controlsRight').setScrollFactor(0);
+
+        this.add.zone(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y - 5, dpadWidth - 10, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsUpLeft').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y - 5, dpadWidth - 10, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsUpRight').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y + dpadWidth + 5, dpadWidth - 10, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsDownLeft').setScrollFactor(0);
+        this.add.zone(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y + dpadWidth + 5, dpadWidth - 10, dpadWidth - 10).setInteractive({useHandCursor: true}).setName('controlsDownRight').setScrollFactor(0);
+
+        // this.add.rectangle(dpadTopLeft.x, dpadTopLeft.y - 5, dpadWidth / 2, dpadWidth - 10, 0xff0000).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y + dpadWidth / 2, dpadWidth - 10, dpadWidth / 2, 0x00ff00).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x, dpadTopLeft.y + dpadWidth + 5, dpadWidth / 2, dpadWidth - 10, 0x0000ff).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y + dpadWidth / 2, dpadWidth - 10, dpadWidth / 2, 0xffff00).setScrollFactor(0);
+
+        // this.add.rectangle(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y - 5, dpadWidth - 10, dpadWidth - 10, 0xff00ff).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y - 5, dpadWidth - 10, dpadWidth - 10, 0x00ffff).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x - dpadWidth / 2 - 5, dpadTopLeft.y + dpadWidth + 5, dpadWidth - 10, dpadWidth - 10, 0x000000).setScrollFactor(0);
+        // this.add.rectangle(dpadTopLeft.x + dpadWidth / 2 + 5, dpadTopLeft.y + dpadWidth + 5, dpadWidth - 10, dpadWidth - 10, 0x333333).setScrollFactor(0);
+        
+        interactButton.on('pointerup', () => 
+        {
+            if(this.currentInteractiveObject)
+            {
+                this.triggerInteractiveEvent({
+                    type: this.currentInteractiveObject?.type ?? 'sign',
+                    interactive: this.currentInteractiveObject,
+                    scene: this.currentInteractiveObject?.sceneTransition
+                }, this.currentInteractiveObject.sourceCharacter);
+            }
+            else
+            {
+                this.megan.play('megan_catching_' + this.meganDirection, true);
+                this.isCatching = true;
+                this.megan.setVelocity(0, 0);
+            }
+        });
+
+        this.input.on('gameobjectover', (pointer: Object, gameObject: Phaser.GameObjects.GameObject) => {
+
+            let name = gameObject.name;
+
+            switch(name) {
+                case 'controlsUp':
+                    this.isTouchUpDown = true;
+                    break;
+                case 'controlsDown':
+                    this.isTouchDownDown = true;
+                    break;
+                case 'controlsLeft':
+                    this.isTouchLeftDown = true;
+                    break;
+                case 'controlsRight':
+                    this.isTouchRightDown = true;
+                    break;
+                case 'controlsUpLeft':
+                    this.isTouchUpDown = true;
+                    this.isTouchLeftDown = true;
+                    break;
+                case 'controlsUpRight':
+                    this.isTouchUpDown = true;
+                    this.isTouchRightDown = true;
+                    break;
+                case 'controlsDownLeft':
+                    this.isTouchDownDown = true;
+                    this.isTouchLeftDown = true;
+                    break;
+                case 'controlsDownRight':
+                    this.isTouchDownDown = true;
+                    this.isTouchRightDown = true;
+                    break;
+            }
+        });
+
+        this.input.on('gameobjectup', (pointer: Object, gameObject: Phaser.GameObjects.GameObject) => {
+            this.isTouchUpDown = false;
+            this.isTouchLeftDown = false;
+            this.isTouchRightDown = false;
+            this.isTouchDownDown = false;
+        });
+
+        this.input.on('gameobjectout', (pointer: Object, gameObject: Phaser.GameObjects.GameObject) => {
+            this.isTouchUpDown = false;
+            this.isTouchLeftDown = false;
+            this.isTouchRightDown = false;
+            this.isTouchDownDown = false;
+        });
     }
 
     private configureTilemaps() 
@@ -935,14 +1045,14 @@ export class Game extends BaseScene
                 ev.update(delta);
             }
 
-            // if(this.currentInteractiveObject && !this.interactText.visible)
-            // {
-            //     this.interactText.setVisible(true);
-            // }
-            // else if(this.currentInteractiveObject == null && this.interactText.visible)
-            // {
-            //     this.interactText.setVisible(false);
-            // }
+            if(this.currentInteractiveObject && !this.interactText.visible)
+            {
+                this.interactText.setVisible(true);
+            }
+            else if(this.currentInteractiveObject == null && this.interactText.visible)
+            {
+                this.interactText.setVisible(false);
+            }
         }
 
         this.updateButterflies(time);
@@ -1054,9 +1164,12 @@ export class Game extends BaseScene
 
     private incrementEvent(name: string | undefined) 
     {
+        console.log('name', name);
         if(name)
         {
             let deactivateInfo = this.gameEventManager.incrementEvent(name);
+
+            console.log(deactivateInfo);
 
             let activation = 0;
             let callback = (onEnd: EndAction) =>
@@ -1356,7 +1469,6 @@ export class Game extends BaseScene
                         let winner = false;
                         let completeHandler = (npc: NPC) =>
                         {
-                            console.log('instances', instances);
                             if(direction == "right")
                             {                        
                                 instances++;

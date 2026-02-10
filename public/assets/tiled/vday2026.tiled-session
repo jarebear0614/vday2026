@@ -15,8 +15,8 @@
         "[123, 124].find((x) =>{ return x == 123; })"
     ],
     "expandedProjectPaths": [
-        ".",
-        "maps"
+        "maps",
+        "."
     ],
     "fileStates": {
         "": {
@@ -56,6 +56,9 @@
         "maps/automapper.tmx#Deep Forest Fantasy Mushroom 1 Extruded": {
             "scaleInDock": 1
         },
+        "maps/automapper.tmx#Deep Forest Mushroom Tree Extruded": {
+            "scaleInDock": 1
+        },
         "maps/automapper.tmx#Deep Forest Tree Extruded": {
             "scaleInDock": 1
         },
@@ -77,11 +80,14 @@
             "scaleInEditor": 1
         },
         "maps/main.tmx": {
-            "scale": 3,
-            "selectedLayer": 14,
+            "expandedObjectLayers": [
+                15
+            ],
+            "scale": 1,
+            "selectedLayer": 2,
             "viewCenter": {
-                "x": 485.3333333333333,
-                "y": 503.83333333333326
+                "x": 496,
+                "y": 551.5
             }
         },
         "maps/main.tmx#Big Tree Extruded": {
@@ -115,7 +121,7 @@
             "scaleInDock": 2
         },
         "maps/main.tmx#Grass Water Deep Forest Extruded": {
-            "scaleInDock": 1,
+            "scaleInDock": 2,
             "scaleInEditor": 1
         },
         "maps/main.tmx#Grass Water Spring Extruded": {
