@@ -181,7 +181,6 @@ export class Constellations extends BaseScene
 
     startConstellation(index: number)
     {
-        console.log('here');
         let constellation = this.constellations[index];
 
         let startX = constellation.startX;
@@ -309,7 +308,7 @@ export class Constellations extends BaseScene
             }
             else
             {
-                this.currentText.text = "<3";
+                this.currentText.text = "(∞π)² <3";
 
                 this.currentText.x = this.getGameWidth() / 2 - this.currentText.displayWidth / 2;
                 this.currentText.y = this.getGameHeight() / 2 - this.currentText.displayHeight / 2;
