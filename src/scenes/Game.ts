@@ -1006,26 +1006,28 @@ export class Game extends BaseScene
                 this.megan.play('megan_idle_' + this.meganDirection, true);
             }
 
-            if( (!this.isUpDown && this.isPreviousUpDown) ||
-                (!this.isLeftDown && this.isPreviousLeftDown) ||
-                (!this.isRightDown && this.isPreviousRightDown) ||
-                (!this.isDownDown && this.isPreviousDownDown)) {
-                    this.megan.setVelocity(0, 0);
-            }
-
-            if(this.interactKey)
-            {
-                this.isPreviousInteractKeyDown = this.isInteractKeyDown;
-                this.isInteractKeyDown = this.interactKey.isDown;
-            }
-
             if(!this.isPreviousInteractKeyDown && this.isInteractKeyDown)
             {
                 if(this.currentInteractiveObject)
                 {
+                    let interactive = new Interactive(
+                        this.currentInteractiveObject.messages, 
+                        this.currentInteractiveObject.type,
+                        this.currentInteractiveObject.eventName,
+                        this.currentInteractiveObject.eventKeyTrigger,
+                        {
+                            title: this.currentInteractiveObject.title,
+                            endAction: this.currentInteractiveObject.endAction,
+                            sourceCharacter: this.currentInteractiveObject.sourceCharacter,
+                            sceneTransition: this.currentInteractiveObject.sceneTransition,
+                            grantedItem: this.currentInteractiveObject.grantedItem,
+                            sourceTriggerEventData: this.currentInteractiveObject.eventTriggerData
+                        }
+                    );
+                    
                     this.triggerInteractiveEvent({
                         type: this.currentInteractiveObject?.type ?? 'sign',
-                        interactive: this.currentInteractiveObject,
+                        interactive: interactive,
                         scene: this.currentInteractiveObject?.sceneTransition
                     }, this.currentInteractiveObject.sourceCharacter);
                 }
@@ -1035,21 +1037,6 @@ export class Game extends BaseScene
                     this.isCatching = true;
                     this.megan.setVelocity(0, 0);
                 }
-            }
-
-            this.wasPlayerTouching = this.playerTouching;
-            this.playerTouching = this.megan.body.embedded;
-            
-            if(this.wasPlayerTouching && !this.playerTouching) 
-            {
-                this.currentInteractiveObject?.sourceCharacter?.movement?.unpause();
-                this.currentInteractiveObject = null;
-            }
-
-            let events = this.gameEventManager.getCurrentGameEvents();
-            for(let ev of events)
-            {
-                ev.update(delta);
             }
 
             if(this.currentInteractiveObject && !this.interactText.visible)
@@ -1062,6 +1049,34 @@ export class Game extends BaseScene
                 this.interactText.setVisible(false);
                 this.interactBugNetIcon.setVisible(true);
             }
+        }
+
+        this.wasPlayerTouching = this.playerTouching;
+        this.playerTouching = this.megan.body.embedded;
+        
+        if(this.wasPlayerTouching && !this.playerTouching) 
+        {
+            this.currentInteractiveObject?.sourceCharacter?.movement?.unpause();
+            this.currentInteractiveObject = null;
+        }
+
+        let events = this.gameEventManager.getCurrentGameEvents();
+        for(let ev of events)
+        {
+            ev.update(delta);
+        }
+
+        if( (!this.isUpDown && this.isPreviousUpDown) ||
+            (!this.isLeftDown && this.isPreviousLeftDown) ||
+            (!this.isRightDown && this.isPreviousRightDown) ||
+            (!this.isDownDown && this.isPreviousDownDown)) {
+                this.megan.setVelocity(0, 0);
+        }
+
+        if(this.interactKey)
+        {
+            this.isPreviousInteractKeyDown = this.isInteractKeyDown;
+            this.isInteractKeyDown = this.interactKey.isDown;
         }
 
         this.updateButterflies(time);
@@ -1268,6 +1283,7 @@ export class Game extends BaseScene
                     {
                         this.showDialog(config.interactive.messages, sourceNPC, {
                             title: config.interactive.title,
+                            eventName: config.interactive.eventName,
                             endAction: config.interactive.endAction,
                             sourceCharacter: config.interactive.sourceCharacter,
                             grantedItem: config.interactive.grantedItem,
