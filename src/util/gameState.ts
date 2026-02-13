@@ -10,6 +10,11 @@ export class GameState
 
     fromScene?: string = '';
 
+    birdwingSpawn: {x: number, y: number} | undefined = undefined; 
+    hairStreakSpawn: {x: number, y: number} | undefined = undefined;
+    lunaMothSpawn: {x: number, y: number} | undefined = undefined;
+    perianderSpawn: {x: number, y: number} | undefined = undefined;
+
     birdwingButterflyObtained: boolean = false;
 
     hairStreakButterflyObtained: boolean = false;

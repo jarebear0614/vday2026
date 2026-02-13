@@ -224,6 +224,7 @@ export class Game extends BaseScene
         this.configureInput();
         this.configureCharacterObjects();
         //this.configureButterflies();
+        this.spawnButterfliesOnSceneChange();
         this.configureUI();
         this.configureMusic();        
         this.configureEvent();
@@ -427,24 +428,28 @@ export class Game extends BaseScene
                             this.birdwingButterflyIcon.setFrame(0);
                             b.destroy();
                             this.gameState.birdwingButterflyObtained = true;
+                            this.gameState.birdwingSpawn = undefined;
                         }
                         else if (b == this.hairstreakButterfly)
                         {
                             this.hairstreakButterflyIcon.setFrame(0);
                             b.destroy();
                             this.gameState.hairStreakButterflyObtained = true;
+                            this.gameState.hairStreakSpawn = undefined;
                         }
                         else if(b == this.lunaMothButterfly)
                         {
                             this.lunaMothButterflyIcon.setFrame(0);
                             b.destroy();
                             this.gameState.lunaMothButterflyObtained = true;
+                            this.gameState.lunaMothSpawn = undefined;
                         }
                         else if(b == this.perianderMetalmarkButterfly)
                         {
                             this.perianderMetalmarkButterflyIcon.setFrame(0);
                             b.destroy();
                             this.gameState.perianderButterflyObtained = true;
+                            this.gameState.perianderSpawn = undefined;
                         }
 
                         this.sparkleSprite.x = b.x;
@@ -827,6 +832,26 @@ export class Game extends BaseScene
         }
     }
 
+    spawnButterfliesOnSceneChange()
+    {
+        if(this.gameState.birdwingSpawn)
+        {
+            this.spawnBirdwingButterfly(this.gameState.birdwingSpawn.x, this.gameState.birdwingSpawn.y);
+        }
+        if(this.gameState.hairStreakSpawn)
+        {
+            this.spawnHairstreakButterfly(this.gameState.hairStreakSpawn.x, this.gameState.hairStreakSpawn.y);
+        }
+        if(this.gameState.lunaMothSpawn)
+        {
+            this.spawnLunaMothButterfly(this.gameState.lunaMothSpawn.x, this.gameState.lunaMothSpawn.y);
+        }
+        if(this.gameState.perianderSpawn)
+        {
+            this.spawnPerianderButterfly(this.gameState.perianderSpawn.x, this.gameState.perianderSpawn.y);
+        }
+    }
+
     configureButterflies()
     {
         let butterflyObjects = this.map.getObjectLayer('map_butterflies')!.objects;
@@ -1129,7 +1154,7 @@ export class Game extends BaseScene
         }
     }
 
-    updateText()
+    updateText(keepLastTextUp: boolean = false)
     {
         this.currentText.text = this.endingText[this.textIndex];
 
@@ -1151,27 +1176,41 @@ export class Game extends BaseScene
 
                 this.tweens.killTweensOf(this.currentText);
 
-                let fadeOutTween = this.tweens.add({
-                    targets: this.currentText,
-                    alpha: { from: this.currentText.alpha, to: 0 },
-                    ease: 'Linear',
-                    duration: 1500,
-                    repeat: 0,
-                    yoyo: false
-                });
-
-                fadeOutTween.onCompleteHandler = () =>
+                if(!keepLastTextUp || this.textIndex + 1 < this.endingText.length)
                 {
-                    this.tweens.killTweensOf(this.currentText);
-                    this.textIndex++;
-                    if(this.textIndex < this.endingText.length)
+                    let fadeOutTween = this.tweens.add({
+                        targets: this.currentText,
+                        alpha: { from: this.currentText.alpha, to: 0 },
+                        ease: 'Linear',
+                        duration: 1500,
+                        repeat: 0,
+                        yoyo: false
+                    });
+
+                    fadeOutTween.onCompleteHandler = () =>
                     {
-                        this.updateText();
+                        this.tweens.killTweensOf(this.currentText);
+                        this.textIndex++;
+                        if(this.textIndex < this.endingText.length)
+                        {
+                            this.updateText(keepLastTextUp);
+                        }
+                        else
+                        {
+                            this.isUpdating = true;
+                        }
                     }
-                    else
-                    {
-                        this.isUpdating = true;
-                    }
+                }
+                else
+                {
+                    let soundOutTween = this.tweens.add({
+                        targets: this.sound,
+                        volume: { from: this.sound.volume, to: 0 },
+                        ease: 'Linear',
+                        duration: 3000,
+                        repeat: 0,
+                        yoyo: false
+                    });
                 }
             })
         }
@@ -1212,6 +1251,7 @@ export class Game extends BaseScene
                         {
                             if(npc)
                             {
+                                this.gameState.birdwingSpawn = {x: npc.body.x, y: npc.body.y};
                                 this.spawnBirdwingButterfly(npc.body.x, npc.body.y);
                             }
                         }
@@ -1219,6 +1259,7 @@ export class Game extends BaseScene
                         {
                             if(npc)
                             {
+                                this.gameState.hairStreakSpawn = {x: npc.body.x, y: npc.body.y};
                                 this.spawnHairstreakButterfly(npc.body.x, npc.body.y);
                             } 
                         }
@@ -1226,6 +1267,7 @@ export class Game extends BaseScene
                         {
                             if(npc)
                             {
+                                this.gameState.lunaMothSpawn = {x: npc.body.x, y: npc.body.y};
                                 this.spawnLunaMothButterfly(npc.body.x, npc.body.y);
                             }
                         }
@@ -1233,6 +1275,7 @@ export class Game extends BaseScene
                         {
                             if(npc)
                             {
+                                this.gameState.perianderSpawn = {x: npc.body.x, y: npc.body.y};
                                 this.spawnPerianderButterfly(npc.body.x, npc.body.y);
                             }
                         }
@@ -1678,7 +1721,7 @@ export class Game extends BaseScene
             this.tweens.killTweensOf(this.endRectangle);
 
             this.endingText = ['You give me so many butterflies.', 'Happy Valentines Day, I love you so much'];
-            this.updateText();
+            this.updateText(true);
         }
     }
 }
